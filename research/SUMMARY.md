@@ -1,43 +1,39 @@
-# SUMMARY — TLSNotary Proof UX: the launch decision
+# SUMMARY (v3) — REP onboarding: the one-tap proofs that make a user flex
 
-*One page. Full evidence in `00-tlsnotary.md` (infra, read from source + built locally), `01-auth-flows.md`, `02-targets.md`, `03-wow-combos.md`, `04-hero-flow.md`.*
+*One page. Full work in `10-templates.md` → `11-wow.md` → `12-login.md` → `13-feasibility.md` → `14-heroes.md`. v1 infra (modes, the proxy-IP line) is the feasibility lookup in `research/v1/`.*
 
-## The decision
-**Launch a "wall of instant proofs" built on TLSNotary _proxy mode_ against clean JSON APIs, hero = "Prove your GitHub contributions."** The wedge is seven low-stakes, JSON-only, on-device-credential combos, low-friction first:
+## The decision — a genesis set, not one hero
+Ship a **wall of one-tap flex proofs**, ranked by **emotional wow × login-effortlessness**, gated by feasibility last. Genesis set (spans the crypto base + 3 universal cohorts):
 
-1. **GitHub** — contributions (OAuth `read:user`, proxy) — **HERO**
-2. **Duolingo** — streak/XP (system-browser cookie, proxy) — consumer virality
-3. **Strava** — activities (OAuth, proxy)
-4. **LeetCode** — solved/rating (cookie, proxy)
-5. **Codeforces** — rating (public + identity-bind, proxy)
-6. **Stack Overflow** — reputation (OAuth `/me`, proxy)
-7. **Anthropic Console** — spend (Admin key, proxy) — niche B2B/agent credibility badge
+| Flex (one sentence) | Cohort | Login | Mode | Role |
+|---|---|---|---|---|
+| *"Spotify · my #1 artist of 2026 is `<X>`"* | Music | 1-tap OAuth | Proxy | **viral hero** |
+| *"Binance · verified +$1.2M PnL / VIP 7 — receipts, not LARP"* | Crypto | pwd+2FA (~1 min) | MPC/in-browser | **base co-hero (premium)** |
+| *"Farcaster · OG since FID #1,234 · Power Badge"* | Crypto-social | SIWF 1-tap | Proxy/none | **ship-first anchor** |
+| *"GitHub · Verified AI Dev · Top 1% by stars"* | AI/dev | 1-tap OAuth | Proxy | deck's AI-dev gate |
+| *"Chess · FM · Top 2% blitz"* | Gaming | 1-tap OAuth/public | Proxy | universal gaming flex |
 
-Every one exposes its fact on a **token-rate-limited JSON API**, so proxy mode's datacenter verifier-IP is *not* flagged → ~1–2 s proofs, browser-clean. That combination — clean API + proxy mode — *is* the wow.
+**Hero = Spotify "#1 artist"** (highest wow × true one-tap × universal — the Wrapped screenshot ritual). **Ship-first = Farcaster** (days; SIWF + public API de-risks the launch). **Base co-hero = Binance "Verified PnL"** (highest resonance for the 3.5M, premium friction stated honestly).
 
-## Default mode policy (and what flips it)
-**Default = Proxy** (fast ~1–2 s, browser-clean: the verifier terminates the WebSocket *and* does the TCP, so nothing extra to host). Verified from source: `proxy.rs:215` (verifier opens the socket) and the browser-deployment clarification in `00-tlsnotary.md`. My local build: **proxy 0.80 s vs MPC 1.30 s** on loopback (a floor — real-world MPC is far worse; see below).
+## Why these (the v3 thesis, proven)
+Stage 2's top raw-wow list included **Binance (22)** and **Airline-status (21)** — both **collapsed at the login stage** (password + MFA, not one-tap), while **Spotify/GitHub/Farcaster/Lichess won on the warm app-switch OAuth "one-tap-via-Apple" feel.** **Login-effortlessness, not flex strength, separates the genesis set.** Then feasibility killed the impossible and demoted the high-friction.
 
-**Flip to MPC when constraint #3 (bot/network defense) turns hostile** — i.e., the *data endpoint* sits behind Cloudflare/Akamai/Imperva/DataDome with IP-reputation or TLS-fingerprint blocking (Amazon, Uber, Ticketmaster, X, Instagram, Spotify's internal endpoints). MPC sends the request from the **user's real residential/mobile IP** and needs no network-trust assumption — at the cost of a **~13 s preprocessing floor** (30 MB garbled-circuit upload; **12.5× slower than proxy at 5 Mbps**, shrinking to 1.8× at 1 Gbps). **Decline entirely** when the endpoint requires **device attestation** (Play Integrity/App Attest — Revolut retail, hardened bank/social apps): neither proxy nor MPC can forge it.
+## Default mode policy (reused from v1, unchanged)
+**Proxy (~1–2 s, browser-clean) by default** for clean token-rate-limited JSON APIs — that's every genesis pick except Binance. **Flip to MPC** (user's real IP, ~3–15 s) only behind a Cloudflare/Akamai **behavioral** WAF — that's **Binance** (`/sapi`+`/bapi`). **Residential = last resort.** **Device-attestation endpoints are dead in any mode** → for CEX, notarize the **web** surface, never the attested mobile app. (Local v1 measurement: proxy 0.80 s vs MPC 1.30 s on loopback; real-world MPC ≫ that.)
 
-> Decision rule: *clean dev/public API → Proxy. WAF'd consumer surface → MPC (accept the latency). Device-attested endpoint → don't build it.*
+## The on-chain vs zkTLS split (for the crypto base)
+**On-chain facts (wallet age, holdings, ENS, NFTs, DeFi PnL) = a separate TRIVIAL track** — public RPC reads, sign-a-message, no zkTLS. **Do not spend zkTLS effort there.** The crypto base's *zkTLS* value is **off-chain/CEX**: Binance VIP/PnL (web session), Coinbase tier (OAuth), Farcaster (SIWF + public). **Telegram top-spender is zkTLS-dead** (MTProto ≠ HTTPS, and the web path is the token-exfiltration anti-goal) — revisit only as a Telegram Mini App.
 
-## The residential-egress question, answered
-**Don't route proxy mode through a residential proxy as the default.** It restores a user-like IP but (a) inserts a third party into the network path who could in principle interpose — **weakening proxy mode's single security assumption** (verifier↔server integrity) — and (b) re-introduces the vendor dependency we're avoiding. Honest hierarchy for a flagged target: **MPC (user-IP, no extra trust) > proxy-via-residential (fast, weaker trust) > datacenter-proxy (will be blocked).** Reclaim leans on residential routing precisely because their model exposes the same IP; we keep it as a last resort, not a default, and never for the Tier-1 wedge (which doesn't need it).
+## Seed questions — answered
+1. **The screenshot fact per cohort:** Music → "my #1 artist"; Crypto → "verified +$X PnL / VIP 7"; Crypto-social → "OG · Power Badge"; AI-dev → "Verified AI Dev · Top 1% stars"; Gaming → "FM · Top 2%"; Fitness → "Recovery 99%" (soft); Travel → "Delta Diamond" (premium, not one-tap).
+2. **Spotify split:** the *flex* lives — `GET /v1/me/top/{artists,tracks}` (`user-top-read`) **survived** Feb-2026 → "#1 artist/top track" is reachable JSON. The **"Top 0.1%" Wrapped percentile is grey-dead** (protobuf at `spclient.wg.spotify.com`, consumer cookie, seasonal). "Prove Premium" is permanently dead (`product` removed).
+3. **One-tap vs password:** one-tap → Spotify, GitHub, Farcaster, Lichess, Coinbase, Whoop (warm app-switch OAuth / SIWF). Password+MFA (disqualified from one-tap) → **Binance, all airlines/hotels/Amex, PSN.**
+4. **The genesis set:** the 5 above — highest `wow × low-friction`, proxy-safe (except Binance=MPC), spanning crypto base + Music/AI-dev/Gaming.
+5. **3-part payoff:** Spotify→Music Power Users + artist presale + "2026 Sound" card; Binance→Top Traders + fee rebates + PnL leaderboard; Farcaster→token-gated channels + allowlist + OG story; GitHub→Verified AI Devs + API credits + repo-stars card; Lichess→chess club + tournament entry + rating card.
 
-## Seed questions — direct answers
-1. **Where does proxy-IP get flagged (→MPC/residential)?** On consumer-app surfaces behind behavioral WAFs (Amazon, Uber, Ticketmaster, X, IG/TikTok, post-lockdown Spotify internals). **Not** on developer/public APIs (GitHub, Strava, Codeforces, StackExchange, Duolingo's versioned API, Anthropic, Wise) — they rate-limit by token, not IP. **The line is the data endpoint's bot posture, not the brand.** Harder line: device attestation defeats *both* modes.
-2. **Single-phone warm user: app-switch OAuth vs cookie reuse?** **OAuth wins for a warm/returning user when the fact is in a plain-bearer scope** (1–2 taps; consent auto-skipped on repeat; redact one header). Cookie reuse is forced when the fact is web-only/scope-less and costs an unavoidable consent sheet on iOS (Android CCT is silent, closing the gap). The real decider is the **scope gate**, not the mechanism.
-3. **Best low-stakes hero (wow-per-effort)?** **GitHub contributions** > Duolingo streak > Strava > Anthropic spend. GitHub: cleanest (in-scope plain bearer, stable-since-2016 JSON, clean ToS, proxy-safe, Reclaim-proven, audience = our seed users). Duolingo has higher virality but cookie-path friction + grey ToS. Anthropic is high-value but admin-key-gated and niche.
-4. **JSON vs HTML, and stability?** All Tier-1 facts are **JSON** and historically stable: GitHub GraphQL (2016+), Strava v3, StackExchange 2.x (2013+), Codeforces REST, Duolingo `/2017-06-30/` (6+ yrs), Anthropic Admin API. Reclaim's law confirmed: **JSON-API providers stay stable; HTML/XPath break on redesigns** → JSON-only launch set. (Spotify is the cautionary tale — it *removed* the `product` tier field from its API in Feb 2026, independently verified; tier-proof is dead, listening-history survives.)
-5. **Does proxy mode simplify browser/mobile-web deployment?** **Yes, decisively.** Browser MPC needs a separately-hosted **WebSocket↔TCP proxy** (browsers can't open raw TCP). In proxy mode the browser prover speaks WebSocket to the verifier and **the verifier does the TCP** — so there's **nothing extra to ship or host**. This is a core reason proxy mode is the default.
-
-## 30-day path to ship the hero (detail in `04-hero-flow.md`)
-1. GitHub OAuth app (`read:user`), PKCE + app-switch, token stays on device.
-2. TLSNotary **verifier/notary** accepting **proxy** sessions over WebSocket, allow-listing `api.github.com`, with an attestation signing key.
-3. **Prover** (app/WASM): `POST api.github.com/graphql { viewer{ login contributionsCollection… } }`; **redact** `Authorization`, **reveal** `login`+`totalContributions`+the query.
-4. Emit the **Verifiable Context Claim** → write the `owns` edge + `contributions.2026` attribute into the **User Context Graph** (90-day expiry).
-5. Wire the (unneeded-but-safe) **OAuth→cookie** and **proxy→MPC** fallbacks; verify GitHub's TLS suite is prover-supported.
-6. Demo a shareable, attestation-backed badge; measure real warm/cold taps+seconds; then add **Duolingo** and **Strava**.
-
-**Bottom line:** proxy mode + clean JSON APIs is the seed-stage moat-builder — instant, delightful, nothing to host. Ship GitHub first; every subsequent proof a user mints (Duolingo, Strava, SO…) attaches to the same graph subject, so the *next* consumer of "active developer" pays zero proving cost. That reuse is the defensibility.
+## 30-day path to ship the genesis set
+1. **Week 1 — Farcaster** (SIWF + Neynar public read): ship the first badge + the graph write (`owns` + `og/power/score`). Proves the loop end-to-end with near-zero risk.
+2. **Week 2 — Spotify hero** (proxy-mode prover vs `api.spotify.com/v1/me/top/artists`; redact bearer, reveal `items[].name`): the viral "#1 artist" card. Resolve quota via Extended-Quota application (REP's 3.5M) **or** user-session notarization.
+3. **Week 3 — GitHub + Lichess** (both proxy, low-risk, mostly v1-proven): the AI-dev gate + the gaming flex; tier the GitHub stars (never raw counts).
+4. **Week 4 — Binance premium** (MPC/in-browser web-session notarization of `/sapi/v1/account/info` VIP + `/bapi` PnL; Primus-style): the base co-hero, framed as "premium, ~1 min," never one-tap.
+Each proof writes a node/edge into the User Context Graph → unlocks a gated community + matched offer + story, and compounds: the next consumer of "Top Trader" or "Verified AI Dev" pays zero proving cost. **Onboarding UX is the moat; the genesis wall builds it.**
