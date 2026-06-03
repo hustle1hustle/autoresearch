@@ -23,8 +23,10 @@ enum Config {
     /// HTTPS callback (Universal Link, Hack 4) — never a custom scheme.
     static let githubRedirectURI = "https://rep.xyz/oauth/github/callback"
     static let githubAuthorizeURL = "https://github.com/login/oauth/authorize"
-    /// REP backend endpoint that refreshes the user token (server holds secret).
-    static let githubRefreshURL = "https://rep.xyz/oauth/github/refresh"
+    /// REP backend (mobile-app/backend-stub) — server holds the client secret.
+    /// For simulator/device on your LAN you can point these at http://<mac-ip>:8787.
+    static let githubExchangeURL = "https://rep.xyz/api/oauth/github/exchange"
+    static let githubRefreshURL = "https://rep.xyz/api/oauth/github/refresh"
 
     // MARK: TLSN / verifier
     /// Matches the app's Settings "Verifier URL". demo.tlsnotary.org to start;

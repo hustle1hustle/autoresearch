@@ -58,12 +58,27 @@ final class GitHubOAuth: NSObject, AuthProviding, ASWebAuthenticationPresentatio
         onStage("webauth.universalLinkReturn")
 
         let items = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        guard let access = items.first(where: { $0.name == "access_token" })?.value else {
-            throw AuthError.denied   // raw `code` came back → backend must exchange it first
+        guard let code = items.first(where: { $0.name == "code" })?.value else { throw AuthError.denied }
+        // CSRF: the returned state must match what we sent.
+        if let returned = items.first(where: { $0.name == "state" })?.value, returned != state {
+            throw AuthError.denied
         }
-        let refresh = items.first(where: { $0.name == "refresh_token" })?.value
-        let expires = Int(items.first(where: { $0.name == "expires_in" })?.value ?? "28800") ?? 28800
-        return OAuthTokens(accessToken: access, refreshToken: refresh, expiresIn: expires)
+        // Code → tokens via the REP backend (client secret stays off-device).
+        return try await exchangeCodeForTokens(code: code)
+    }
+
+    private func exchangeCodeForTokens(code: String) async throws -> OAuthTokens {
+        var req = URLRequest(url: URL(string: Config.githubExchangeURL)!)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONSerialization.data(withJSONObject: ["code": code])
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard (resp as? HTTPURLResponse)?.statusCode == 200,
+              let j = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let access = j["access_token"] as? String else { throw AuthError.denied }
+        return OAuthTokens(accessToken: access,
+                           refreshToken: j["refresh_token"] as? String,
+                           expiresIn: j["expires_in"] as? Int ?? 28800)
     }
 
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor { anchor }
