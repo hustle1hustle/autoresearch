@@ -13,7 +13,7 @@ var config = {
       method: "GET",
       host: api,
       pathname: apiPath,
-      verifierUrl: "http://localhost:7047"
+      verifierUrl: "https://demo.tlsnotary.org"
     }
   ],
   urls: ["https://steamcommunity.com/*", "https://api.steampowered.com/*"]
@@ -45,8 +45,8 @@ var onClick = async () => {
   const resp = await prove(
     { url, method: "GET", headers },
     {
-      verifierUrl: "http://localhost:7047",
-      proxyUrl: "ws://localhost:7047/proxy?token=" + api,
+      verifierUrl: "https://demo.tlsnotary.org",
+      proxyUrl: "wss://demo.tlsnotary.org/proxy?token=" + api,
       maxRecvData: 4096,
       // 1 game + appinfo ≈ <1KB; buffered
       maxSentData: 2048,
