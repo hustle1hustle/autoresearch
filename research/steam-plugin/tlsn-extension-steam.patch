@@ -1,0 +1,61 @@
+diff --git a/app/mobile/assets/plugins/registry.ts b/app/mobile/assets/plugins/registry.ts
+index 1b7b03d..ace2665 100644
+--- a/app/mobile/assets/plugins/registry.ts
++++ b/app/mobile/assets/plugins/registry.ts
+@@ -30,6 +30,7 @@ const CODE_MAP: Record<string, () => string> = {
+   discord_dm: () => require('@tlsn/plugins/dist/mobile/discord_dm').DISCORD_DM_PLUGIN_CODE,
+   discord_profile: () =>
+     require('@tlsn/plugins/dist/mobile/discord_profile').DISCORD_PROFILE_PLUGIN_CODE,
++  steam: () => require('@tlsn/plugins/dist/mobile/steam').STEAM_PLUGIN_CODE,
+ };
+ 
+ const DEFAULT_VERIFIER_URL = 'https://demo.tlsnotary.org';
+diff --git a/packages/plugins/build.js b/packages/plugins/build.js
+index 40284fc..c97ec02 100644
+--- a/packages/plugins/build.js
++++ b/packages/plugins/build.js
+@@ -30,6 +30,7 @@ const plugins = [
+   'discord_dm',
+   'discord_profile',
+   'idme',
++  'steam',
+ ];
+ 
+ // Demo configuration
+diff --git a/packages/plugins/src/registry.ts b/packages/plugins/src/registry.ts
+index 3c55478..d36328c 100644
+--- a/packages/plugins/src/registry.ts
++++ b/packages/plugins/src/registry.ts
+@@ -226,6 +226,32 @@ export const PLUGIN_REGISTRY: PluginMetadata[] = [
+       urls: ['https://account.id.me/*'],
+     },
+   },
++  {
++    id: 'steam',
++    name: 'Steam · Dota 2 Hours',
++    description: 'Prove your Dota 2 hours on record on Steam',
++    logo: '🎮', // 🎮
++    resultLabel: 'Dota 2 Hours (minutes)',
++    accentColor: '#1b2838',
++    platforms: ['mobile'],
++    pluginConfig: {
++      name: 'Steam Dota 2 Hours',
++      description: 'This plugin will prove your Dota 2 hours on record on Steam.',
++      requests: [
++        {
++          method: 'GET',
++          host: 'api.steampowered.com',
++          pathname: '/IPlayerService/GetOwnedGames/v1/',
++        },
++      ],
++      urls: [
++        'https://steamcommunity.com/*',
++        'https://login.steampowered.com/*',
++        'https://store.steampowered.com/*',
++        'https://api.steampowered.com/*',
++      ],
++    },
++  },
+ ];
+ 
+ export function getPluginById(id: string): PluginMetadata | undefined {
