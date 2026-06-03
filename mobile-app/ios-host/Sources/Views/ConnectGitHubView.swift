@@ -19,7 +19,9 @@ final class ConnectFlow: ObservableObject {
 
     private let auth = Auth.make()
     private let prover = Prover.make()
-    private let tokens: TokenStore = InMemoryTokenStore.shared
+    // Hack 2 setup: persist the token to the Keychain so the next visit is the
+    // warm-returning 1-tap Face ID path (ReproveFlow).
+    private let tokens: TokenStore = KeychainTokenStore.shared
 
     /// Wired by the view: persist claim + navigate to success.
     var onSuccess: ((ProofClaim) -> Void)?
@@ -64,37 +66,16 @@ final class ConnectFlow: ObservableObject {
     private func notarize(bearer: String) async {
         phase = .notarizing
         showStages = false
-
-        // Hack 6: reveal named stages only if we overrun the animation budget.
-        let budget = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64(Config.notarizeAnimationBudget * 1_000_000_000))
-            if case .notarizing = phase { withAnimation(Theme.snappy) { showStages = true } }
-        }
-
-        ProofAttemptCapture.shared.emit(type: "notarize.requestFired")
-        let request = GitHubProof.request(bearer: bearer)
-        let mode = ModeRouter.initialMode()
+        let notarizer = Notarizer(prover: prover)
         do {
-            let fact = try await prover.prove(request: request, mode: mode) { st, _, _ in
-                Task { @MainActor in self.stage = st }   // progress callback may run off-main
-            }
-            budget.cancel()
-            ProofAttemptCapture.shared.emit(type: "notarize.proofComputed")
-            ProofAttemptCapture.shared.emit(type: "success", payload: [
-                "totalDurationMs": .double(ProofAttemptCapture.shared.elapsedMs()),
-                "notarizationsCount": .int(1),
-            ])
-            ProofAttemptCapture.shared.endAttempt()
-            let claim = ProofClaim(
-                platform: "github", account: fact.account, value: fact.value,
-                label: fact.label, mode: mode.rawValue.lowercased(),
-                serverName: fact.serverName, revealed: fact.revealed, redacted: fact.redacted
-            )
+            let claim = try await notarizer.run(
+                bearer: bearer, platform: "github",
+                onStage: { self.stage = $0 },
+                onShowStages: {
+                    if case .notarizing = self.phase { withAnimation(Theme.snappy) { self.showStages = true } }
+                })
             onSuccess?(claim)
         } catch {
-            budget.cancel()
-            // (ModeRouter.fallback(after:) → MPC retry wired in a later item.)
-            ProofAttemptCapture.shared.emit(type: "error", payload: ["errorCategory": .string("notarize_timeout")])
             phase = .failed("Connection dropped. Try again — we don't keep anything from the failed attempt.")
         }
     }

@@ -1,8 +1,11 @@
 # REP iOS host-shell (native SwiftUI, mock-first)
 
-Items **①–④** of `mobile-app/PLAN.md`: the opening/onboarding flow for the GitHub
-hero. **Runs on the simulator/iPhone right now with mocks** — no Rust prover, no
-OAuth app, no rep.xyz needed. That's the "does the open feel fast" gate.
+Items **①–④ + ⑥** of `mobile-app/PLAN.md`: the opening/onboarding flow for the
+GitHub hero, including the **warm-returning 1-tap (Face ID) path**. **Runs on the
+simulator/iPhone right now with mocks** — no Rust prover, no OAuth app, no rep.xyz
+needed. That's the "does the open feel fast" gate.
+
+> **Simulator: enable Face ID** for the warm-returning path — **Features ▸ Face ID ▸ Enrolled**, then use **Features ▸ Face ID ▸ Matching/Non-matching Face** when the prompt appears. Without an enrolled biometric the Keychain item can't be created, so the app falls back to a fresh connect (by design).
 
 ## Build & run (Mac)
 ```bash
@@ -19,7 +22,7 @@ open REP.xcodeproj             # Xcode → pick your (free) Apple ID team in Sig
 2. **Pre-sheet** explainer (Hack 3, first run only) → **Continue with GitHub**
 3. Mock auth handoff (~0.6 s) → **mint** (~1.6 s; hidden under the snappy transition, Hack 6 — if it ever overruns 2 s you'll see the named **Connecting → Confirming → Sealing** stages, never a spinner)
 4. **Proof minted · octocat · 1,247 contributions** → **Share** / **What was proved** (expandable)
-5. Re-open → "Your context" now lists the claim.
+5. Re-open → "Your context" lists the claim. **Tap it → Face ID → ~3–4 s → success** — the warm-returning **1-tap** hero path (Hack 2 + 6, 0 app-switches).
 
 Tap timings/events are written to `Documents/proof-attempts.jsonl` per
 `test-kit/measurement/event-spec.md` (read via `ProofAttemptCapture`).
@@ -30,8 +33,9 @@ Tap timings/events are written to `Documents/proof-attempts.jsonl` per
 | 1 — pre-warm (reduced; PKCE + DNS/TLS warm, see OQ2) | `Sources/Net/Prewarm.swift` |
 | 3 — pre-sheet explainer | `Sources/Views/PreSheetView.swift` |
 | 4 — Universal Link auto-return | `Sources/Auth/Auth.swift` (`UniversalLinkRouter`) + `Resources/REP.entitlements` + `ServerTemplates/apple-app-site-association` |
-| 6 — notarize-in-animation | `Sources/Views/ConnectGitHubView.swift` (`ConnectFlow.notarize`) |
-| 2 — Keychain+Face ID (item ⑥), 5 — passkey probe (item ⑦) | not in this slice |
+| 6 — notarize-in-animation (shared) | `Sources/Flow/Notarizer.swift` (used by connect + reprove) |
+| 2 — Keychain + Face ID (warm-returning 1-tap) | `Sources/Auth/KeychainTokenStore.swift`, `Sources/Flow/ReproveFlow.swift` |
+| 5 — passkey probe (item ⑦) | not in this slice |
 
 ## Going real (later items)
 - **OAuth (OQ9):** create a GitHub OAuth App (github.com/settings/developers), **enable "Issue refresh tokens"**, set callback `https://rep.xyz/oauth/github/callback`, put the Client ID in `Config.githubClientID`, set `Config.useMockAuth = false`. Real `ASWebAuthenticationSession` https-callback needs **iOS 17.4+** (mocks cover older dev devices).
