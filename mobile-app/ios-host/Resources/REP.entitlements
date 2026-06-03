@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Hack 4: Universal Link auto-return for the OAuth callback + webcredentials
+         for passkeys (Hack 5, item ⑦).
+         DEV TIP: while testing via direct Xcode run (not TestFlight), append
+         "?mode=developer" to skip Apple's CDN AASA fetch, e.g.
+           applinks:rep.xyz?mode=developer
+         Switch back to the plain entries for TestFlight/App Store. -->
+    <key>com.apple.developer.associated-domains</key>
+    <array>
+        <string>applinks:rep.xyz</string>
+        <string>webcredentials:rep.xyz</string>
+    </array>
+</dict>
+</plist>

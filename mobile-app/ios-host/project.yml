@@ -1,0 +1,38 @@
+# XcodeGen spec — generates REP.xcodeproj.
+# Mac: `brew install xcodegen` then `xcodegen generate` in this folder, open REP.xcodeproj.
+name: REP
+options:
+  bundleIdPrefix: xyz.rep
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    CODE_SIGN_STYLE: Automatic
+    # Mac: set your (free) Apple ID team here, or pick it in Xcode > Signing.
+    DEVELOPMENT_TEAM: ""
+targets:
+  REP:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: xyz.rep.host
+        INFOPLIST_FILE: Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Resources/REP.entitlements
+        TARGETED_DEVICE_FAMILY: "1" # iPhone
+        ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+    # --- TLSN prover (item ⑧) ---------------------------------------------
+    # The opening UX (①–④) builds & runs with MockProver — NO framework needed.
+    # When the prover xcframework is ready (OQ6), drop it in Frameworks/ and
+    # uncomment the block below + add Sources/TLSN/UniFFIProver.swift, then set
+    # Config.useMockProver = false.
+    # dependencies:
+    #   - framework: Frameworks/TlsnMobile.xcframework
+    #     embed: true
