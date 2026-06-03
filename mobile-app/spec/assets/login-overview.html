@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REP. Логины и proof'ы: обзор открытий</title>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --bg-card: #14141C;
+    --bg-elev: #1C1C28;
+    --border: #2A2A38;
+    --text: #E8E8F0;
+    --text-dim: #8E8EA0;
+    --text-muted: #5E5E70;
+    --blue: #3B5BFF;
+    --blue-dim: #2A3A99;
+    --green: #4ADE80;
+    --red: #F87171;
+    --yellow: #FACC15;
+    --orange: #FB923C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { max-width: 1200px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header { margin-bottom: 64px; }
+  header h1 {
+    font-size: 42px; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 8px; background: linear-gradient(135deg, #fff 0%, #8E8EAA 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header .sub { color: var(--text-dim); font-size: 17px; }
+  header .meta { color: var(--text-muted); font-size: 13px; margin-top: 12px; }
+
+  section { margin-bottom: 64px; }
+  h2 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
+    margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px;
+  }
+  h2 .num {
+    color: var(--blue); font-size: 14px; font-weight: 600;
+    background: var(--blue-dim); padding: 4px 10px; border-radius: 6px;
+    letter-spacing: 0.05em;
+  }
+  h2 + .lead { color: var(--text-dim); font-size: 16px; margin-bottom: 32px; max-width: 800px; }
+  h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; margin-top: 32px; }
+
+  .tldr { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 48px; }
+  .tldr h2 { margin-bottom: 16px; font-size: 22px; }
+  .tldr ul { list-style: none; }
+  .tldr li {
+    padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 16px;
+  }
+  .tldr li:last-child { border-bottom: none; }
+  .tldr li .marker {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+    background: var(--blue); color: white; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+  }
+  .tldr li strong { color: var(--text); }
+  .tldr li .body { color: var(--text-dim); }
+
+  /* Warm/Cold split visual */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+  .split .col {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+  }
+  .split .col.warm { border-top: 3px solid var(--green); }
+  .split .col.cold { border-top: 3px solid var(--orange); }
+  .split .col h4 { font-size: 18px; margin-bottom: 8px; }
+  .split .col .label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+  .split .col .stat { font-size: 36px; font-weight: 800; line-height: 1; margin: 12px 0; }
+  .split .col.warm .stat { color: var(--green); }
+  .split .col.cold .stat { color: var(--orange); }
+  .split .col .desc { color: var(--text-dim); font-size: 14px; }
+
+  /* Flow diagrams */
+  .flow {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; margin: 16px 0; overflow-x: auto;
+  }
+  .flow-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  .flow-header h4 { font-size: 16px; font-weight: 600; margin: 0; }
+  .flow-header .badges { display: flex; gap: 8px; }
+  .badge {
+    background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
+    font-size: 12px; padding: 4px 10px; border-radius: 6px; font-weight: 500;
+  }
+  .badge.warm { color: var(--green); border-color: var(--green); }
+  .badge.cold { border-color: var(--orange); color: var(--orange); }
+  .badge.med { color: var(--yellow); border-color: var(--yellow); }
+
+  .steps {
+    display: flex; align-items: stretch; gap: 0; min-width: max-content; padding-bottom: 4px;
+  }
+  .step {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; min-width: 130px; max-width: 180px;
+    position: relative; display: flex; flex-direction: column; gap: 4px;
+  }
+  .step + .step { margin-left: 28px; }
+  .step + .step::before {
+    content: "→"; position: absolute; left: -22px; top: 50%;
+    transform: translateY(-50%); color: var(--text-muted); font-size: 16px;
+  }
+  .step.user { background: rgba(59, 91, 255, 0.08); border-color: var(--blue); }
+  .step.system { background: rgba(250, 204, 21, 0.08); border-color: var(--yellow); }
+  .step.network { background: rgba(74, 222, 128, 0.06); border-color: rgba(74, 222, 128, 0.4); }
+  .step.hidden { background: rgba(94, 94, 112, 0.05); border-color: var(--text-muted); border-style: dashed; opacity: 0.85; }
+
+  .step .kind { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .step.user .kind { color: var(--blue); }
+  .step.system .kind { color: var(--yellow); }
+  .step.network .kind { color: var(--green); }
+  .step .title { font-weight: 600; font-size: 13px; line-height: 1.3; }
+  .step .meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .flow-totals {
+    display: flex; gap: 24px; margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border); font-size: 13px;
+  }
+  .flow-totals .item { color: var(--text-dim); }
+  .flow-totals .item strong { color: var(--text); font-size: 16px; }
+
+  /* Hacks grid */
+  .hacks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 800px) { .hacks, .split { grid-template-columns: 1fr; } }
+  .hack {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; position: relative;
+  }
+  .hack .num {
+    position: absolute; top: 20px; right: 20px;
+    font-size: 48px; font-weight: 900; line-height: 1; color: var(--blue);
+    opacity: 0.3;
+  }
+  .hack h4 { font-size: 17px; margin-bottom: 6px; padding-right: 50px; }
+  .hack .saving {
+    color: var(--green); font-weight: 600; font-size: 13px;
+    margin-bottom: 12px; padding: 4px 0;
+  }
+  .hack .saving::before { content: "↓ "; }
+  .hack .desc { color: var(--text-dim); font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+  .hack .ship { font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 10px; }
+  .hack .ship strong { color: var(--yellow); }
+
+  /* Comparison table */
+  table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; font-size: 14px;
+  }
+  th { background: var(--bg-elev); padding: 12px 14px; text-align: left;
+    font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--text); }
+  td.steal { color: var(--green); }
+  td.avoid { color: var(--red); }
+
+  /* Anti-patterns */
+  .anti { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .anti-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; gap: 14px;
+  }
+  .anti-card .icon {
+    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+    background: rgba(248, 113, 113, 0.15); color: var(--red);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .anti-card h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  .anti-card .what { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+  .anti-card .fix { font-size: 12px; color: var(--green); }
+  .anti-card .fix::before { content: "Фикс. "; color: var(--text-muted); font-weight: 600; }
+
+  /* iOS/Android comparison */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .vs .side { padding: 24px; }
+  .vs .side.ios { border-right: 1px solid var(--border); }
+  .vs .side h4 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .vs .side h4 .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .vs .ios h4 .dot { background: var(--blue); }
+  .vs .android h4 .dot { background: var(--green); }
+  .vs ul { list-style: none; }
+  .vs li { padding: 8px 0; font-size: 13px; color: var(--text-dim); border-bottom: 1px dashed var(--border); }
+  .vs li:last-child { border-bottom: none; }
+  .vs li strong { color: var(--text); font-weight: 600; }
+
+  /* Detection probes */
+  .probes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .probe {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+    position: relative;
+  }
+  .probe.ok { border-left: 3px solid var(--green); }
+  .probe.bad { border-left: 3px solid var(--red); }
+  .probe .verdict {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); margin-bottom: 6px;
+  }
+  .probe.ok .verdict { color: var(--green); }
+  .probe.bad .verdict { color: var(--red); }
+  .probe h5 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .probe .desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .probe .latency { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+  /* Misc */
+  code {
+    background: var(--bg-elev); padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", Monaco, Menlo, monospace; font-size: 12px;
+    color: #B4B4D0;
+  }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim);
+  }
+  .pill.win { background: rgba(74, 222, 128, 0.15); color: var(--green); border-color: rgba(74, 222, 128, 0.4); }
+  .pill.lose { background: rgba(248, 113, 113, 0.15); color: var(--red); border-color: rgba(248, 113, 113, 0.4); }
+
+  footer {
+    margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--border);
+    color: var(--text-muted); font-size: 12px;
+  }
+
+  /* Ladder */
+  .ladder { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+  .rung {
+    display: grid; grid-template-columns: 110px 1fr 240px; gap: 20px;
+    padding: 18px 20px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--bg-card); align-items: center;
+  }
+  @media (max-width: 900px) {
+    .rung { grid-template-columns: 80px 1fr; }
+    .rung .rung-phone { display: none; }
+  }
+  .rung-tier { text-align: center; }
+  .rung-num {
+    font-size: 36px; font-weight: 900; line-height: 1; color: var(--blue);
+  }
+  .rung-unit { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+  .rung-secs { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 6px; }
+  .rung-body h5 { font-size: 16px; margin-bottom: 4px; }
+  .rung-apps { color: var(--text-dim); font-size: 13px; margin-bottom: 8px; line-height: 1.5; }
+  .rung-apps strong { color: var(--text); }
+  .rung-why { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .rung.t1 { border-left: 4px solid var(--green); }
+  .rung.t2 { border-left: 4px solid #88E168; }
+  .rung.t3 { border-left: 4px solid var(--yellow); }
+  .rung.t4 { border-left: 4px solid var(--orange); }
+  .rung.t5 { border-left: 4px solid #FB7185; }
+  .rung.t6 { border-left: 4px solid var(--red); }
+
+  /* Phone mocks */
+  .phone {
+    width: 220px; height: 440px;
+    background: #1a1a22; border: 8px solid #2a2a35;
+    border-radius: 42px; padding: 8px; position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .phone::before {
+    content: ""; position: absolute; top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 92px; height: 26px; background: #1a1a22;
+    border-radius: 0 0 16px 16px; z-index: 10;
+  }
+  .phone.mini { width: 160px; height: 320px; border-radius: 32px; padding: 6px; border-width: 6px; }
+  .phone.mini::before { width: 70px; height: 18px; border-radius: 0 0 12px 12px; top: 6px; }
+  .screen {
+    width: 100%; height: 100%; border-radius: 30px;
+    overflow: hidden; position: relative;
+    font-family: -apple-system, sans-serif; font-size: 11px; line-height: 1.4;
+  }
+  .phone.mini .screen { border-radius: 24px; font-size: 10px; }
+  .screen.dark { background: #0a0a14; color: #fff; }
+  .screen.rep { background: linear-gradient(180deg, #0A0A0F 0%, #14141C 100%); color: #fff; }
+  .screen.light { background: #F5F5F7; color: #1D1D1F; }
+  .screen.github { background: #0d1117; color: #f0f6fc; }
+  .screen.duo { background: #58CC02; color: #fff; }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 30px 22px 8px; font-size: 10px; font-weight: 600;
+  }
+  .phone.mini .status-bar { padding: 22px 14px 6px; font-size: 9px; }
+  .scrn { padding: 8px 16px 16px; }
+  .phone.mini .scrn { padding: 6px 12px 12px; }
+  .scrn h6 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .scrn p { font-size: 11px; line-height: 1.45; margin-bottom: 8px; }
+  .scrn .muted { color: rgba(255,255,255,0.5); font-size: 10px; }
+  .screen.light .scrn .muted { color: #86868B; }
+  .scrn .btn {
+    display: block; width: 100%; padding: 9px 12px; border-radius: 10px;
+    background: var(--blue); color: #fff; font-size: 11px; font-weight: 600;
+    text-align: center; margin-top: 8px;
+  }
+  .scrn .btn.subtle { background: rgba(255,255,255,0.08); color: #fff; }
+  .scrn .btn.gh { background: #2DA44E; color: #fff; }
+  .scrn .btn.ios { background: #007AFF; color: #fff; }
+  .scrn .btn.outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); }
+  .scrn .row {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 6px;
+  }
+  .scrn .row .icon { width: 24px; height: 24px; border-radius: 6px;
+    background: var(--green); display: flex; align-items: center; justify-content: center;
+    color: #000; font-weight: 700; flex-shrink: 0; font-size: 11px;
+  }
+  .scrn .row .label { flex: 1; font-size: 11px; }
+  .scrn .row .meta { font-size: 9px; color: rgba(255,255,255,0.5); }
+  .scrn .field {
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 10px; border-radius: 6px; font-size: 10px;
+    color: rgba(255,255,255,0.5); margin-bottom: 6px;
+  }
+  .screen.light .scrn .field { background: #fff; border-color: #D2D2D7; color: #86868B; }
+  .scrn .stage { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 11px; }
+  .scrn .stage .dot { width: 14px; flex-shrink: 0; }
+  .scrn .stage.done { color: var(--green); }
+  .scrn .stage.active { color: var(--text); }
+  .scrn .stage.todo { color: rgba(255,255,255,0.3); }
+
+  /* iOS system sheet mock */
+  .ios-sheet-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.3);
+    display: flex; align-items: flex-end;
+  }
+  .ios-sheet {
+    width: 100%; background: rgba(245,245,247,0.96);
+    backdrop-filter: blur(20px); padding: 20px 16px 24px;
+    border-radius: 14px 14px 0 0; color: #1D1D1F;
+    text-align: center;
+  }
+  .ios-sheet h6 { font-size: 14px; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
+  .ios-sheet p { font-size: 11px; line-height: 1.4; margin-bottom: 14px; color: #3A3A3C; }
+  .ios-sheet .btn { background: #007AFF; color: #fff; padding: 10px; border-radius: 12px;
+    font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .ios-sheet .btn.cancel { background: transparent; color: #007AFF; }
+
+  /* Face ID overlay */
+  .faceid-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(20px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; color: #fff; text-align: center;
+  }
+  .faceid-icon {
+    width: 56px; height: 56px; border: 2px solid #fff; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; font-size: 24px;
+  }
+  .faceid-overlay h6 { font-size: 16px; margin-bottom: 8px; }
+  .faceid-overlay p { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+  .faceid-overlay .btn.cancel { background: rgba(255,255,255,0.15); color: #fff; padding: 10px 20px;
+    border-radius: 10px; font-size: 12px; }
+
+  /* GitHub bar */
+  .gh-bar {
+    background: #161b22; padding: 8px 12px; border-bottom: 1px solid #21262d;
+    font-size: 10px; color: #8b949e; display: flex; align-items: center; gap: 6px;
+  }
+  .gh-bar::before {
+    content: "🔒"; font-size: 9px;
+  }
+
+  /* Scenario flow */
+  .frames {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 24px 4px; align-items: flex-start;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .frames::-webkit-scrollbar { height: 8px; }
+  .frames::-webkit-scrollbar-track { background: transparent; }
+  .frames::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .frame {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    min-width: 175px; flex-shrink: 0;
+  }
+  .frame-cap {
+    font-size: 11px; color: var(--text-dim); text-align: center; max-width: 175px;
+    line-height: 1.4;
+  }
+  .frame-cap .num {
+    display: inline-block; background: var(--blue); color: #fff;
+    width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700;
+    line-height: 18px; margin-right: 4px;
+  }
+  .frame-cap strong { color: var(--text); display: block; margin-bottom: 2px; }
+  .frame-cap .why { color: var(--text-muted); font-size: 10px; margin-top: 4px; }
+  .frame-arrow {
+    color: var(--text-muted); font-size: 20px;
+    padding-top: 150px; flex-shrink: 0; align-self: flex-start;
+  }
+  .scenario-meta {
+    display: flex; gap: 24px; margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid var(--border); font-size: 13px; color: var(--text-dim);
+  }
+  .scenario-meta strong { color: var(--text); font-size: 15px; display: block; }
+
+  .quick-app-table {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px;
+  }
+  @media (max-width: 800px) { .quick-app-table { grid-template-columns: 1fr; } }
+  .qa-cell {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px;
+  }
+  .qa-cell .qa-name { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .qa-cell .qa-stats { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .qa-cell .qa-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* TLS Session diagram */
+  .session-box {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; margin: 24px 0;
+    position: relative;
+  }
+  .session-label {
+    position: absolute; top: -10px; left: 20px; background: var(--bg);
+    padding: 0 12px; font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); font-weight: 700;
+  }
+  .session-handshake {
+    background: rgba(59, 91, 255, 0.08); border: 1px dashed var(--blue);
+    padding: 10px 16px; border-radius: 8px; font-size: 12px;
+    color: var(--blue); margin-bottom: 12px; font-family: 'SF Mono', Monaco, monospace;
+  }
+  .session-handshake::before { content: "━━━ "; }
+  .session-handshake::after { content: " ━━━"; }
+  .session-requests {
+    background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 16px;
+    font-family: 'SF Mono', Monaco, monospace; font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .req-line {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid var(--border); align-items: center;
+    color: var(--text-dim);
+  }
+  .req-line:last-child { border-bottom: none; }
+  .req-line .verb {
+    color: var(--green); font-weight: 700;
+    background: rgba(74, 222, 128, 0.1); padding: 1px 6px; border-radius: 4px;
+    margin-right: 6px;
+  }
+  .req-line .verb.post { color: var(--orange); background: rgba(251, 146, 60, 0.1); }
+  .req-line .verb.redact { color: var(--red); background: rgba(248, 113, 113, 0.1); }
+  .req-line .arrow { color: var(--text-muted); }
+  .req-line .ms { color: var(--text-muted); font-size: 11px; }
+  .req-line .label { color: var(--text); font-family: -apple-system, sans-serif; font-size: 12px; }
+  .session-arrow {
+    text-align: center; color: var(--text-muted); font-size: 22px;
+    margin: 8px 0;
+  }
+  .session-output {
+    background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.3);
+    padding: 14px 18px; border-radius: 10px;
+  }
+  .session-output strong { color: var(--green); display: block; margin-bottom: 4px; }
+  .session-output p { color: var(--text-dim); font-size: 13px; margin: 0; line-height: 1.5; }
+
+  .compose-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; font-size: 13px; margin-top: 24px;
+  }
+  .compose-table th, .compose-table td {
+    padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .compose-table th { background: var(--bg-elev); font-size: 12px; font-weight: 600; color: var(--text); }
+  .compose-table tr:last-child td { border-bottom: none; }
+  .compose-table .platform { color: var(--text); font-weight: 600; }
+  .compose-table .endpoints { color: var(--text-dim); font-family: 'SF Mono', Monaco, monospace; font-size: 11px; line-height: 1.6; }
+  .compose-table .reveals { color: var(--text-dim); font-size: 12px; }
+  .compose-table .time { color: var(--green); font-weight: 600; font-size: 12px; white-space: nowrap; }
+  .compose-table .time.med { color: var(--yellow); }
+  .compose-table .time.bad { color: var(--red); }
+
+  .callout {
+    background: rgba(251, 146, 60, 0.05); border: 1px solid rgba(251, 146, 60, 0.3);
+    border-left: 4px solid var(--orange); border-radius: 10px;
+    padding: 16px 20px; margin: 16px 0; font-size: 13px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .callout-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--orange); color: #000; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 16px;
+  }
+  .callout strong { color: var(--text); }
+  .callout p { color: var(--text-dim); line-height: 1.5; margin: 4px 0 0; }
+
+  .sizes {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 16px;
+  }
+  @media (max-width: 800px) { .sizes { grid-template-columns: 1fr; } }
+  .size-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px;
+  }
+  .size-card .size-num {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    background: var(--blue); color: #fff; padding: 3px 10px; border-radius: 999px;
+    letter-spacing: 0.05em; margin-bottom: 12px;
+  }
+  .size-card h5 { font-size: 15px; margin-bottom: 8px; }
+  .size-card .verdict {
+    color: var(--green); font-weight: 600; font-size: 12px; margin-bottom: 10px;
+  }
+  .size-card .verdict.med { color: var(--yellow); }
+  .size-card.med .size-num { background: var(--yellow); color: #000; }
+  .size-card .desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Логины и proof'ы. Обзор открытий.</h1>
+  <p class="sub">Что мы нашли по mobile UX для TLSNotary context proofs. Инфографика, не лонгрид.</p>
+  <p class="meta">REP · 2026-06-02 · iOS-primary · полная версия в <code>mobile-ux-deep-research.md</code></p>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <h2>Главное за 6 пунктов</h2>
+  <ul>
+    <li>
+      <div class="marker">1</div>
+      <div class="body"><strong>Главная переменная не метод входа, а warm/cold юзер.</strong> Залогинен ли он уже в сервис на этом девайсе. Тёплый. быстро почти везде. Холодный. любой метод платит налог на вход.</div>
+    </li>
+    <li>
+      <div class="marker">2</div>
+      <div class="body"><strong>Warm returning юзер реально может в 1 тап.</strong> Первый proof. 2 тапа. Второй и далее. Face ID, и proof готов за ~3 секунды. Refresh-токен GitHub в Keychain под биометрией.</div>
+    </li>
+    <li>
+      <div class="marker">3</div>
+      <div class="body"><strong>~1-2 секунды notarize прячутся под анимацию возврата OAuth.</strong> Pre-warm WebSocket на открытии экрана + notarize в Task.detached параллельно с iOS app-switch animation. Юзер видит "тап → done".</div>
+    </li>
+    <li>
+      <div class="marker">4</div>
+      <div class="body"><strong>Silent warm-detection на iOS почти мёртв с iOS 9.</strong> canOpenURL только по allowlist в Info.plist (cap 50 schemes с iOS 15). Hidden WebView пробы. anti-goal violation. Что остаётся. Universal Link installability + conditional UI passkey probe.</div>
+    </li>
+    <li>
+      <div class="marker">5</div>
+      <div class="body"><strong>TLSNotary GA mobile app пока не существует.</strong> iOS prover в экспериментальном <code>ios-wasmtime</code>, упирается в открытый issue wasmtime. Главный канал у них. Chrome extension. Значит REP не "побеждает" их аппку, а становится канонической мобильной zkTLS аппкой.</div>
+    </li>
+    <li>
+      <div class="marker">6</div>
+      <div class="body"><strong>Reclaim использует WKWebView для cookie capture.</strong> Паттерн не их собственный, портируется в нативный SwiftUI. REP может взять WebView UX, оставив TLSNotary substrate.</div>
+    </li>
+  </ul>
+</div>
+
+<!-- Warm vs Cold split -->
+<section>
+  <h2><span class="num">01</span> Тёплый vs холодный</h2>
+  <p class="lead">Один и тот же метод даёт совсем разные цифры в зависимости от того, есть ли у юзера уже живая сессия в сервисе на этом девайсе. Детект warm/cold и правильный порядок офферов важнее выбора метода.</p>
+
+  <div class="split">
+    <div class="col warm">
+      <div class="label">Тёплый юзер</div>
+      <h4>Залогинен в сервис на девайсе</h4>
+      <div class="stat">1-3 тапа</div>
+      <div class="desc">Быстро почти везде. Passkey 3-5 сек, Sign in with Apple 1-4 сек, app-switch OAuth 5-10 сек, cookie reuse 5-12 сек. Главная преграда. iOS consent sheet, и она же единственная цена за shared cookies.</div>
+    </div>
+    <div class="col cold">
+      <div class="label">Холодный юзер</div>
+      <h4>Не залогинен нигде на девайсе</h4>
+      <div class="stat">+10-60 сек</div>
+      <div class="desc">К любому методу прибавляется разовый логин-подфлоу. Email + пароль, 2FA, восстановление пароля. Magic-link и email-OTP. главные сливы воронки (юзер залип в инбоксе).</div>
+    </div>
+  </div>
+</section>
+
+<!-- Scenarios -->
+<section>
+  <h2><span class="num">02</span> Три сценария входа для hero (GitHub)</h2>
+  <p class="lead">Один и тот же hero proof, три разных пути. Тапы и секунды реальные оценки, прокси-mode notarize ~1-2с включён.</p>
+
+  <!-- Scenario 1: Warm returning -->
+  <div class="flow">
+    <div class="flow-header">
+      <h4>Сценарий 1. Warm returning. 1 тап, ~3-4 сек.</h4>
+      <div class="badges">
+        <span class="badge warm">тёплый</span>
+        <span class="badge">повторный</span>
+        <span class="badge">Hack 2+6</span>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step hidden">
+        <div class="kind">фон</div>
+        <div class="title">WebSocket к verifier</div>
+        <div class="meta">на appear, ~500мс</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Тап "Prove again"</div>
+        <div class="meta">0с</div>
+      </div>
+      <div class="step system">
+        <div class="kind">iOS</div>
+        <div class="title">Face ID</div>
+        <div class="meta">~0.5с анимация</div>
+      </div>
+      <div class="step hidden">
+        <div class="kind">фон</div>
+        <div class="title">Refresh token → access</div>
+        <div class="meta">~200мс</div>
+      </div>
+      <div class="step network">
+        <div class="kind">сеть</div>
+        <div class="title">Notarize (прячется в анимацию)</div>
+        <div class="meta">~1-2с</div>
+      </div>
+      <div class="step">
+        <div class="kind">REP</div>
+        <div class="title">✓ Proof готов</div>
+        <div class="meta">~3-4с от тапа</div>
+      </div>
+    </div>
+    <div class="flow-totals">
+      <div class="item">тапов. <strong>1</strong></div>
+      <div class="item">секунд. <strong>3-4</strong></div>
+      <div class="item">app-switch'ей. <strong>0</strong></div>
+      <div class="item">консент-экранов. <strong>0</strong></div>
+    </div>
+  </div>
+
+  <!-- Scenario 2: Warm first time -->
+  <div class="flow">
+    <div class="flow-header">
+      <h4>Сценарий 2. Warm first-time. 2-3 тапа, ~7-10 сек.</h4>
+      <div class="badges">
+        <span class="badge warm">тёплый</span>
+        <span class="badge">первый раз</span>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step hidden">
+        <div class="kind">фон</div>
+        <div class="title">WebSocket pre-warm</div>
+        <div class="meta">~500мс</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Тап "Connect GitHub"</div>
+        <div class="meta">0с</div>
+      </div>
+      <div class="step">
+        <div class="kind">REP</div>
+        <div class="title">Pre-sheet объяснение</div>
+        <div class="meta">снимает страх</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Тап Continue</div>
+        <div class="meta">~2с</div>
+      </div>
+      <div class="step system">
+        <div class="kind">iOS</div>
+        <div class="title">"App wants to use github.com"</div>
+        <div class="meta">consent sheet</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Тап Continue (iOS)</div>
+        <div class="meta">~3с</div>
+      </div>
+      <div class="step network">
+        <div class="kind">Safari</div>
+        <div class="title">GitHub consent</div>
+        <div class="meta">cookie reuse, auto-skip на repeat</div>
+      </div>
+      <div class="step system">
+        <div class="kind">iOS</div>
+        <div class="title">Universal Link → REP</div>
+        <div class="meta">auto-return</div>
+      </div>
+      <div class="step network">
+        <div class="kind">сеть</div>
+        <div class="title">Notarize</div>
+        <div class="meta">~1-2с</div>
+      </div>
+      <div class="step">
+        <div class="kind">REP</div>
+        <div class="title">✓ Proof + save refresh token</div>
+        <div class="meta">~7-10с</div>
+      </div>
+    </div>
+    <div class="flow-totals">
+      <div class="item">тапов. <strong>2-3</strong></div>
+      <div class="item">секунд. <strong>7-10</strong></div>
+      <div class="item">app-switch'ей. <strong>1</strong> (auto-return)</div>
+      <div class="item">консент-экранов. <strong>2</strong> (iOS + GitHub)</div>
+    </div>
+  </div>
+
+  <!-- Scenario 3: Cold -->
+  <div class="flow">
+    <div class="flow-header">
+      <h4>Сценарий 3. Cold. 4-5 тапов, ~20-30 сек.</h4>
+      <div class="badges">
+        <span class="badge cold">холодный</span>
+        <span class="badge">не залогинен нигде</span>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Тап "Connect GitHub"</div>
+        <div class="meta">0с</div>
+      </div>
+      <div class="step">
+        <div class="kind">REP</div>
+        <div class="title">Pre-sheet</div>
+        <div class="meta"></div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Continue</div>
+        <div class="meta">~2с</div>
+      </div>
+      <div class="step system">
+        <div class="kind">iOS</div>
+        <div class="title">iOS consent</div>
+        <div class="meta"></div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Continue (iOS)</div>
+        <div class="meta">~3с</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">GitHub login form</div>
+        <div class="meta">email+пароль ~10-20с</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">2FA (если есть)</div>
+        <div class="meta">SMS-код ~5-15с</div>
+      </div>
+      <div class="step user">
+        <div class="kind">юзер</div>
+        <div class="title">Approve consent</div>
+        <div class="meta"></div>
+      </div>
+      <div class="step system">
+        <div class="kind">iOS</div>
+        <div class="title">UL → REP</div>
+        <div class="meta">auto-return</div>
+      </div>
+      <div class="step network">
+        <div class="kind">сеть</div>
+        <div class="title">Notarize</div>
+        <div class="meta">~1-2с</div>
+      </div>
+      <div class="step">
+        <div class="kind">REP</div>
+        <div class="title">✓ Proof</div>
+        <div class="meta">~20-30с</div>
+      </div>
+    </div>
+    <div class="flow-totals">
+      <div class="item">тапов. <strong>4-5</strong></div>
+      <div class="item">секунд. <strong>20-30</strong></div>
+      <div class="item">app-switch'ей. <strong>1</strong></div>
+      <div class="item">сливы. <strong>пароль, 2FA</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 Hacks -->
+<section>
+  <h2><span class="num">03</span> Шесть хаков. ранжированы по impact</h2>
+  <p class="lead">Каждый. конкретный трюк с измеримой экономией и ссылкой на референс-аппку. Три первых ставятся за неделю.</p>
+
+  <div class="hacks">
+    <div class="hack">
+      <div class="num">1</div>
+      <h4>Pre-warm WebSocket на appear, не на тап</h4>
+      <div class="saving">500-1000 мс с perceived latency</div>
+      <div class="desc">Открыть WebSocket к verifier и сгенерить PKCE до того, как юзер вообще тапнул CTA. Когда тапнет. сетевая часть уже оплачена. Plaid делает то же через Plaid.create() + onLoad.</div>
+      <div class="ship"><strong>Неделя 1.</strong> Тривиально. SwiftUI .task на view appear.</div>
+    </div>
+
+    <div class="hack">
+      <div class="num">6</div>
+      <h4>Notarize прячется в iOS app-switch animation</h4>
+      <div class="saving">скрывает целые 1-2 с notarize</div>
+      <div class="desc">После OAuth-возврата iOS тратит ~400 мс на анимацию возврата в REP. В это время кидаем GraphQL + selective-disclosure proof. Юзер видит "тап → done", без отдельного спиннера.</div>
+      <div class="ship"><strong>Неделя 1.</strong> Зависит от Hack 1.</div>
+    </div>
+
+    <div class="hack">
+      <div class="num">3</div>
+      <h4>Pre-sheet объяснение перед iOS consent</h4>
+      <div class="saving">+15-25 п.п. конверсии через системный шит</div>
+      <div class="desc">До ASWebAuthenticationSession. один экран с копией. "Сейчас iOS спросит, можно ли использовать github.com для входа. Пароль остаётся у GitHub". Системный шит теперь не пугает, юзер его ждёт.</div>
+      <div class="ship"><strong>Неделя 1.</strong> Показывать только первый раз, потом флаг в UserDefaults.</div>
+    </div>
+
+    <div class="hack">
+      <div class="num">4</div>
+      <h4>Universal Link auto-return. никаких custom URL schemes</h4>
+      <div class="saving">убирает "swipe-back" drop ~30%</div>
+      <div class="desc">OAuth callback URL = Universal Link с apple-app-site-association. iOS сам маршрутизирует обратно в REP. Никаких "Open in REP" кнопок, никакого ручного переключения. Плэйд делает только так.</div>
+      <div class="ship"><strong>Неделя 1.</strong> AASA файл + entitlement.</div>
+    </div>
+
+    <div class="hack">
+      <div class="num">2</div>
+      <h4>Refresh token + Face ID в Keychain. 2→1 тап на повторе</h4>
+      <div class="saving">~7с → ~3-4с на каждом repeat proof</div>
+      <div class="desc">После первого proof кладём refresh token в Keychain под .biometryCurrentSet. Второй proof. Face ID запускает silent refresh-grant + notarize. Нет app-switch'а, нет consent'а. Apple Wallet делает это с issuer-app credentials.</div>
+      <div class="ship"><strong>Неделя 2.</strong> GitHub OAuth refresh + SecAccessControl.</div>
+    </div>
+
+    <div class="hack">
+      <div class="num">5</div>
+      <h4>Conditional UI passkey probe</h4>
+      <div class="saving">3-5с вход когда применимо</div>
+      <div class="desc">mediation="conditional" фоном проверяет наличие passkey без UI. Если есть. появляется в системной autofill-полоске одним тапом. Privacy-preserving by design. RP не узнаёт, есть ли passkey, если юзер сам не выбрал.</div>
+      <div class="ship"><strong>Неделя 3.</strong> Применимо для REP-self login и cookie-таргетов (Duolingo, LeetCode когда выкатят).</div>
+    </div>
+  </div>
+</section>
+
+<!-- Detection probes -->
+<section>
+  <h2><span class="num">04</span> Что можно тихо узнать про юзера до тапа</h2>
+  <p class="lead">Silent warm-detection на iOS пост-iOS-9 сильно ограничен. Privacy. Apple убрала большинство способов после того, как Twitter/Facebook злоупотребляли. Что осталось работать.</p>
+
+  <div class="probes">
+    <div class="probe ok">
+      <div class="verdict">OK ship</div>
+      <h5>canOpenURL("github-mobile://")</h5>
+      <div class="desc">Установлена ли нативная аппка таргета. Синхронный in-process вызов.</div>
+      <div class="latency">~5мс · cap 50 schemes в Info.plist с iOS 15</div>
+    </div>
+    <div class="probe ok">
+      <div class="verdict">OK ship</div>
+      <h5>Universal Link installability</h5>
+      <div class="desc">OS знает по AASA в момент install, что наш UL уважает таргет. Никаких runtime-fetch'ей.</div>
+      <div class="latency">~10мс · entitlement Associated Domains</div>
+    </div>
+    <div class="probe ok">
+      <div class="verdict">OK ship</div>
+      <h5>Conditional UI passkey</h5>
+      <div class="desc">Сам тихо ищет passkey, RP не узнаёт ничего, пока юзер не выберет. Privacy-preserving by W3C design.</div>
+      <div class="latency">~100-300мс</div>
+    </div>
+    <div class="probe ok">
+      <div class="verdict">OK ship</div>
+      <h5>hasPreviousSignIn() (Google/Apple)</h5>
+      <div class="desc">Прошлый успех Sign-in-with-Google в нашей же аппке. Не leak'ает в Google.</div>
+      <div class="latency">~5мс</div>
+    </div>
+    <div class="probe bad">
+      <div class="verdict">⛔ anti-goal</div>
+      <h5>Hidden WKWebView к GitHub</h5>
+      <div class="desc">Запустить authenticated traffic от имени юзера без consent'а. Технически работает. Этическая красная линия. Не делаем.</div>
+      <div class="latency">~300-800мс</div>
+    </div>
+    <div class="probe bad">
+      <div class="verdict">⛔ обнаруживает себя</div>
+      <h5>ASWebAuthSession с коротким timeout</h5>
+      <div class="desc">Сам акт открытия = показ consent sheet. Юзер уже всё знает.</div>
+      <div class="latency">~500-2000мс</div>
+    </div>
+  </div>
+</section>
+
+<!-- Reference apps -->
+<section>
+  <h2><span class="num">05</span> Что украсть у других аппок</h2>
+  <p class="lead">Каждая. что украсть и чего избегать. Чистый паттерн-grab без копирования.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Аппка</th>
+        <th>Что они делают</th>
+        <th>Что украсть</th>
+        <th>Чего избегать</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>TLSNotary</strong><br><span class="pill">Chrome ext</span></td>
+        <td>Десктоп. side-panel, переключение между табами для логина и notarize. GA mobile аппки нет.</td>
+        <td class="steal">Transparency about commitments в success state. Показать, что в proof спрятано.</td>
+        <td class="avoid">Десктоп-парадигма. tab juggling не переносится в мобайл.</td>
+      </tr>
+      <tr>
+        <td><strong>Reclaim</strong><br><span class="pill">InApp iOS SDK</span></td>
+        <td>SwiftUI sheet с WKWebView внутри. Логин внутри шита. Cookie capture через WebView API (включая HttpOnly).</td>
+        <td class="steal">Inline WebView login для cookie-таргетов. Юзер не покидает аппку. WKHTTPCookieStore + WKUserScript паттерн.</td>
+        <td class="avoid">Тяжёлый Reclaim-брендинг во время чужого логина. Бренд таргета должен доминировать.</td>
+      </tr>
+      <tr>
+        <td><strong>Plaid Link</strong><br><span class="pill">gold standard</span></td>
+        <td>Preload через Plaid.create(), потом .open(). OAuth handoff через Universal Link. Event-driven UX.</td>
+        <td class="steal">Preload-паттерн (Hack 1). Универсальные линки вместо схем (Hack 4). Event sequence для инструментирования каждого drop-off.</td>
+        <td class="avoid">Слишком тяжёлый брендинг сам по себе подходит для финансов, не для low-stakes proof'ов.</td>
+      </tr>
+      <tr>
+        <td><strong>Stripe Identity</strong><br><span class="pill">multi-step</span></td>
+        <td>IdentityVerificationSheet. Document capture (auto, без shutter) → selfie → loading → success.</td>
+        <td class="steal">Auto-capture без manual shutter. Один шит с несколькими шагами, не navigation stack. Implicit progress без церемонии.</td>
+        <td class="avoid">Оптимистичное "All set!" до фактической проверки. У нас 1-2с notarize короче, показывай реально.</td>
+      </tr>
+      <tr>
+        <td><strong>Apple Wallet</strong><br><span class="pill">native fast</span></td>
+        <td>"Add to Apple Wallet" → PassKit берёт управление → ~3 системных экрана → Face ID → success + push.</td>
+        <td class="steal">Skip extra auth когда уже auth'ились в issuer app (OTP при install). Success notification вне флоу. Не интерстициалить системные хендофы.</td>
+        <td class="avoid">Запрещено иметь interstitials между Apple-button и системным шитом. Применимо и к OAuth.</td>
+      </tr>
+      <tr>
+        <td><strong>Privy / Web3Auth</strong><br><span class="pill">crypto Web2-feel</span></td>
+        <td>useLoginWithPasskey hook с явным state machine (initial → generating-challenge → awaiting-passkey → submitting-response → done).</td>
+        <td class="steal">Explicit auth-state машина в UI. Разные copy на разных стадиях, никаких "Loading…". REP-аналог. connecting / auth / notarizing / done.</td>
+        <td class="avoid">Огромный modal с веба, не переносить на мобайл.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- iOS vs Android -->
+<section>
+  <h2><span class="num">06</span> iOS vs Android. где разница реальная</h2>
+  <p class="lead">По таймингам почти симметрично. Но есть три места, где платформы расходятся, и Android обычно выигрывает за счёт меньшего количества системных шитов.</p>
+
+  <div class="vs">
+    <div class="side ios">
+      <h4><span class="dot"></span>iOS</h4>
+      <ul>
+        <li><strong>ASWebAuthenticationSession.</strong> шарит куки с Safari, НО показывает scary consent sheet каждый раз. Нельзя убрать без потери шаринга.</li>
+        <li><strong>canOpenURL.</strong> только по allowlist (LSApplicationQueriesSchemes), cap 50 с iOS 15.</li>
+        <li><strong>SMS код.</strong> Security Code AutoFill через QuickType, ~3 мин окно, нужно слово "code" в сообщении.</li>
+        <li><strong>Passkey.</strong> ASAuthorizationPlatformPublicKeyCredentialProvider, conditional UI с iOS 17.5+, requestStyle:.conditional.</li>
+        <li><strong>Universal Links.</strong> apple-app-site-association в /.well-known/, Associated Domains entitlement. TestFlight иногда тупит на 15 минут с fetch'ем AASA.</li>
+        <li><strong>Биометрия.</strong> Keychain + SecAccessControl(.biometryCurrentSet). Re-enrollment Face ID = item инвалидируется (security feature, не баг).</li>
+      </ul>
+    </div>
+    <div class="side android">
+      <h4><span class="dot"></span>Android</h4>
+      <ul>
+        <li><strong>Chrome Custom Tabs.</strong> шарят cookie jar с Chrome БЕЗ всякого consent sheet. Тихий cookie reuse. iOS-эквивалента нет.</li>
+        <li><strong>PackageManager queryIntentActivities.</strong> &lt;queries&gt; в манифесте с Android 11+. Тот же allowlist, что в iOS.</li>
+        <li><strong>SMS Retriever API.</strong> сам подхватывает код без permission и без копи-паста. Чуть быстрее iOS.</li>
+        <li><strong>Passkey.</strong> CredentialManager.getCredential с GetPublicKeyCredentialOption + isConditional=true. System autofill bar с Android 14+.</li>
+        <li><strong>App Links.</strong> assetlinks.json + android:autoVerify="true". Аналог UL, та же логика.</li>
+        <li><strong>Биометрия.</strong> EncryptedSharedPreferences + BiometricPrompt. Эквивалент iOS.</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="margin-top: 24px; color: var(--text-dim); font-size: 14px;">
+    <strong style="color: var(--text);">Чистая разница в пользу Android.</strong> Hack 3 (pre-sheet объяснение) на Android можно вообще не делать. Custom Tabs тихо шарят куки. На iOS pre-sheet обязателен.
+  </p>
+</section>
+
+<!-- Anti-patterns -->
+<section>
+  <h2><span class="num">07</span> Чего не делать. anti-patterns</h2>
+  <p class="lead">То, что убивает воронку в каждой второй аппке. Каждый. что выглядит, и как фиксится.</p>
+
+  <div class="anti">
+    <div class="anti-card">
+      <div class="icon">⏳</div>
+      <div>
+        <h5>"Spinner without context"</h5>
+        <div class="what">Generic ProgressView() с надписью "Loading…" или без копии.</div>
+        <div class="fix">Каждое ожидание называет шаг. "Confirming with notary…". Стадии через ✓ / ● / ○. Никогда не "Loading".</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">❓</div>
+      <div>
+        <h5>"Did it work?"</h5>
+        <div class="what">Тихий успех. модал закрылся, юзер вернулся на исходный экран без подтверждения.</div>
+        <div class="fix">Явный success state с фактом ("octocat · 1,234 contributions"). Опционально local push с подтверждением (Apple Wallet паттерн).</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">📧</div>
+      <div>
+        <h5>"Lost in inbox"</h5>
+        <div class="what">Magic-link флоу. юзер тапает линк в Mail, открывается Safari, REP остался в фоне.</div>
+        <div class="fix">Anti-goal. magic-link никогда не primary/secondary. OTP-код, который виден в push, без открытия Mail.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">↩️</div>
+      <div>
+        <h5>"Where did I come from"</h5>
+        <div class="what">После OAuth юзер на callback-странице в Safari без явной кнопки "вернуться".</div>
+        <div class="fix">Universal Link auto-return (Hack 4). Никогда custom URL schemes. iOS сам маршрутизирует.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">😱</div>
+      <div>
+        <h5>"Scary system sheet"</h5>
+        <div class="what">Юзер тапает "Continue with GitHub" и получает в лоб iOS-шит "App wants to use github.com to Sign In", которого он не ждал.</div>
+        <div class="fix">Pre-sheet объяснение (Hack 3). Показывается один раз, потом флаг в UserDefaults.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">🔍</div>
+      <div>
+        <h5>"What was just proved"</h5>
+        <div class="what">Proof готов, но юзер видит только зелёную галочку. Что доказано, что спрятано, кто атесторил. неясно.</div>
+        <div class="fix">Раскрываемая карточка "What was proved" в success state. Реальный request, revealed fields, redacted bytes, ключ нотариуса, expiry.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">🔄</div>
+      <div>
+        <h5>"Re-prove every time"</h5>
+        <div class="what">Каждое обновление proof'а. полный 2-тап OAuth заново.</div>
+        <div class="fix">Hack 2. refresh token + Face ID. Second proof и далее. 1 тап, ~3 секунды.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">🎭</div>
+      <div>
+        <h5>"App-switch ты не можешь верить"</h5>
+        <div class="what">Юзер бросается на какую-то OAuth-страницу, URL bar скрыт, неясно. github.com или наш скам.</div>
+        <div class="fix">НИКОГДА WKWebView для password entry на чужих сайтах. Только ASWebAuthSession (показывает URL) или app-switch. Apple HIG требование тоже.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">🏷️</div>
+      <div>
+        <h5>"Branded sheet on third-party login"</h5>
+        <div class="what">Тяжёлый REP-брендинг во время ввода GitHub-пароля. Юзер не понимает, кому он даёт credentials.</div>
+        <div class="fix">Во время OAuth handoff бренд таргета доминирует. REP chrome subtle. REP возвращается только в success state.</div>
+      </div>
+    </div>
+
+    <div class="anti-card">
+      <div class="icon">🚪</div>
+      <div>
+        <h5>"Permission requested before purpose"</h5>
+        <div class="what">"Allow notifications?" / "Allow Face ID?" prompts на первом launch до того, как юзер что-то сделал.</div>
+        <div class="fix">Биометрия. запрашиваем когда юзер реально её используем (перед сохранением в Keychain). Push. после первого успеха ("Want a heads-up when…?").</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Order of offers -->
+<section>
+  <h2><span class="num">08</span> Порядок офферов на одностраничной мобилке</h2>
+  <p class="lead">Что показать главной CTA, что под "Other ways to connect", и почему.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 50px;">Приоритет</th>
+        <th>Метод</th>
+        <th>Когда применим</th>
+        <th>Воронка</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color: var(--green);">1</strong></td>
+        <td><strong>Passkey / Sign in with Apple/Google</strong></td>
+        <td>Сервис умеет passkey ИЛИ предлагает SiwA/G ИЛИ у нас же есть REP-passkey для cross-device</td>
+        <td><span class="pill win">1-2 тапа, 3-5с</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--green);">2</strong></td>
+        <td><strong>App-switch OAuth (PKCE)</strong></td>
+        <td>Нативная аппка установлена И факт в plain-bearer scope</td>
+        <td><span class="pill win">2-3 тапа, 5-10с</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--yellow);">3</strong></td>
+        <td><strong>System browser + cookie reuse</strong></td>
+        <td>Факт web-only ИЛИ scope не покрывает (Spotify, Duolingo, LeetCode)</td>
+        <td><span class="pill">2-3 тапа, 5-12с (iOS sheet, Android silent)</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--orange);">4</strong></td>
+        <td>SMS OTP</td>
+        <td>Ничего из выше не работает, есть номер</td>
+        <td><span class="pill">3-5 тапов, 15-40с</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--orange);">5</strong></td>
+        <td>Email OTP (код, не link)</td>
+        <td>Нет даже SMS, последний шанс</td>
+        <td><span class="pill">4-6 тапов, ~30-45с</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--red);">×</strong></td>
+        <td>Magic-link</td>
+        <td>НИКОГДА primary/secondary. Юзер залип в инбоксе.</td>
+        <td><span class="pill lose">3-6 тапов, 45-60с, главный слив</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--red);">×</strong></td>
+        <td>Manual password</td>
+        <td>Anti-goal. забытый пароль = слив №1.</td>
+        <td><span class="pill lose">10+ тапов, 30-90с</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--text-muted);">desktop</strong></td>
+        <td>QR cross-device / FIDO CDA</td>
+        <td>Не для мобилки-одиночки. Когда proving переедет на десктоп.</td>
+        <td><span class="pill">5-7 тапов, 20-40с</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Recognizable apps ladder -->
+<section>
+  <h2><span class="num">09</span> Узнаваемые аппки. ladder сложности логина</h2>
+  <p class="lead">Чтобы интуиция работала, вот реальные аппки которыми ты пользовался, расставленные по числу тапов. От самой простой к самой сложной. Справа моковый экран с типичной критической точкой каждого уровня.</p>
+
+  <div class="ladder">
+
+    <div class="rung t1">
+      <div class="rung-tier">
+        <div class="rung-num">1-2</div>
+        <div class="rung-unit">тапа</div>
+        <div class="rung-secs">1.4 - 5 с</div>
+      </div>
+      <div class="rung-body">
+        <h5>Passkey / Sign in with Apple / Google One Tap</h5>
+        <div class="rung-apps">
+          <strong>Apple ID</strong> входит сам в системные сервисы. <strong>Sign in with Apple</strong> в Trello / Medium / Robinhood. <strong>Google One Tap</strong> на YouTube/Gmail. <strong>1Password</strong> через passkey. <strong>Privy</strong> wallet через passkey.
+        </div>
+        <div class="rung-why">Один системный prompt с биометрией = коммит. Никакого редиректа, токен возвращается прямо в аппку. RP не узнаёт про юзера лишнего (conditional UI privacy-preserving).</div>
+      </div>
+      <div class="rung-phone">
+        <div class="phone mini">
+          <div class="screen light">
+            <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+            <div class="faceid-overlay" style="background: rgba(255,255,255,0.95); color: #1D1D1F;">
+              <div class="faceid-icon" style="border-color: #000; color: #000;">⌒</div>
+              <h6 style="color: #1D1D1F;">Face ID</h6>
+              <p style="color: #3A3A3C;">Sign in to Medium</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rung t2">
+      <div class="rung-tier">
+        <div class="rung-num">2-3</div>
+        <div class="rung-unit">тапа</div>
+        <div class="rung-secs">5 - 10 с</div>
+      </div>
+      <div class="rung-body">
+        <h5>App-switch OAuth (нативная аппка установлена)</h5>
+        <div class="rung-apps">
+          <strong>"Connect Twitter"</strong> в Buffer / Hootsuite. <strong>"Connect GitHub"</strong> в Vercel / Linear / Cursor. <strong>"Login with Discord"</strong> в гейминг-аппках. <strong>"Connect Strava"</strong> в Runkeeper. <strong>"Connect Telegram"</strong> в Telegram bots.
+        </div>
+        <div class="rung-why">Нативная аппка таргета уже залогинена. App-switch → биометрия в её приложении → consent (только первый раз, потом auto-skip) → auto-return через Universal Link.</div>
+      </div>
+      <div class="rung-phone">
+        <div class="phone mini">
+          <div class="screen dark">
+            <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+            <div class="scrn">
+              <div style="background: #FC4C02; padding: 14px; border-radius: 12px; text-align: center; margin: 8px 0;">
+                <div style="font-size: 20px; font-weight: 800;">strava</div>
+              </div>
+              <p style="font-weight: 600; color: #fff; margin-top: 12px;">Continue as @runner_42?</p>
+              <p class="muted">Buffer wants to read your activities.</p>
+              <div class="btn" style="background: #FC4C02;">Authorize Buffer</div>
+              <div class="btn outline">Cancel</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rung t3">
+      <div class="rung-tier">
+        <div class="rung-num">2-3</div>
+        <div class="rung-unit">тапа</div>
+        <div class="rung-secs">5 - 12 с</div>
+      </div>
+      <div class="rung-body">
+        <h5>System browser + cookie reuse (web-only факт)</h5>
+        <div class="rung-apps">
+          <strong>Любой "Login через веб"</strong> в маленьких индихакер-аппках. <strong>OAuth Notion</strong> из партнёр-аппки. <strong>Login Spotify</strong> с консумерским tier-проофом (через open.spotify.com). <strong>Reclaim</strong> Duolingo/LeetCode flow в InApp SDK.
+        </div>
+        <div class="rung-why">Логин уже есть в Safari/Chrome. Cookie шарится. На iOS системный шит "App wants to use site.com" один раз пугает. На Android тихо без шита (Chrome Custom Tabs).</div>
+      </div>
+      <div class="rung-phone">
+        <div class="phone mini">
+          <div class="screen light">
+            <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3);"></div>
+            <div class="ios-sheet" style="position: absolute; bottom: 0; left: 0; right: 0;">
+              <h6>"REP" Wants to Use<br>"github.com" to Sign In</h6>
+              <p>This allows app and website to share information.</p>
+              <div class="btn">Continue</div>
+              <div class="btn cancel">Cancel</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rung t4">
+      <div class="rung-tier">
+        <div class="rung-num">3-5</div>
+        <div class="rung-unit">тапов</div>
+        <div class="rung-secs">15 - 40 с</div>
+      </div>
+      <div class="rung-body">
+        <h5>SMS OTP</h5>
+        <div class="rung-apps">
+          <strong>WhatsApp</strong> при первом запуске. <strong>Telegram</strong> first run. <strong>Тинькофф / Revolut / Сбер</strong> при настройке устройства. <strong>Uber</strong> первый вход. Почти любой банк, почти любая такси-аппка.
+        </div>
+        <div class="rung-why">Ждём смс, читаем код, вводим. На iOS Security Code AutoFill подхватывает в QuickType (~3 мин окно, нужно слово "code"). На Android SMS Retriever API сам читает без permission.</div>
+      </div>
+      <div class="rung-phone">
+        <div class="phone mini">
+          <div class="screen dark" style="background: #075E54;">
+            <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+            <div class="scrn">
+              <div style="text-align: center; font-size: 22px; margin: 12px 0;">💬</div>
+              <h6 style="text-align: center;">Verify your number</h6>
+              <p style="text-align: center;" class="muted">Enter the code we sent to +1 555 0123</p>
+              <div style="display: flex; gap: 4px; justify-content: center; margin: 16px 0;">
+                <div class="field" style="width: 22px; text-align: center;">3</div>
+                <div class="field" style="width: 22px; text-align: center;">7</div>
+                <div class="field" style="width: 22px; text-align: center;">9</div>
+                <div class="field" style="width: 22px; text-align: center;">2</div>
+                <div class="field" style="width: 22px; text-align: center;">_</div>
+                <div class="field" style="width: 22px; text-align: center;">_</div>
+              </div>
+              <p class="muted" style="text-align: center; font-size: 9px;">Resend in 0:45</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rung t5">
+      <div class="rung-tier">
+        <div class="rung-num">4-6</div>
+        <div class="rung-unit">тапов</div>
+        <div class="rung-secs">30 - 60 с</div>
+      </div>
+      <div class="rung-body">
+        <h5>Email OTP / magic link (главный слив воронки)</h5>
+        <div class="rung-apps">
+          <strong>Substack</strong> login (magic-link). <strong>Notion</strong> первый логин. <strong>Vercel CLI</strong> auth. <strong>Slack workspace</strong> через email. <strong>Discord</strong> при сбросе пароля. Любая аппка с "Click the link in your email to continue".
+        </div>
+        <div class="rung-why">Уход в почтовую аппку = точка невозврата. Юзер видит inbox, отвлекается, может вообще не вернуться в исходную аппку. Magic-link особенно. ~14 секунд медленнее OTP-кода в среднем.</div>
+      </div>
+      <div class="rung-phone">
+        <div class="phone mini">
+          <div class="screen light">
+            <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+            <div class="scrn">
+              <div style="font-size: 32px; text-align: center; margin: 20px 0;">📧</div>
+              <h6 style="text-align: center; color: #1D1D1F;">Check your email</h6>
+              <p style="text-align: center; color: #3A3A3C;">We sent a magic link to user@gmail.com</p>
+              <p style="text-align: center;" class="muted">Open the email and tap the button to continue.</p>
+              <div style="margin-top: 12px; padding: 10px; background: #fff; border-radius: 8px; text-align: center; font-size: 10px; color: #007AFF;">Open Mail</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rung t6">
+      <div class="rung-tier">
+        <div class="rung-num">10+</div>
+        <div class="rung-unit">тапов</div>
+        <div class="rung-secs">30 - 90 с</div>
+      </div>
+      <div class="rung-body">
+        <h5>Manual password + 2FA (anti-goal для нас)</h5>
+        <div class="rung-apps">
+          <strong>Гос-сектор</strong> аппки (любая старая бан-клиент, ИФНС, госуслуги). <strong>Enterprise SSO</strong> с TOTP в Authy/Google Authenticator. <strong>GitHub без passkey</strong> с 2FA. Любой "Forgot password" recovery flow.
+        </div>
+        <div class="rung-why">Ввод пароля без автозаполнения. Открыть Authenticator. Вернуться. Ввести 6 цифр. Если забыл пароль. recovery email. Каждое звено добавляет слив. Это то место, где юзеры реально отваливаются.</div>
+      </div>
+      <div class="rung-phone">
+        <div class="phone mini">
+          <div class="screen github">
+            <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+            <div class="gh-bar">github.com/login</div>
+            <div class="scrn">
+              <h6 style="text-align: center;">Sign in to GitHub</h6>
+              <div class="field">Username or email</div>
+              <div class="field">●●●●●●●●</div>
+              <div class="btn gh">Sign in</div>
+              <p style="text-align: center; margin-top: 8px;" class="muted">Forgot password?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h3>Где наши Tier-1 таргеты на этой лестнице (для контекста)</h3>
+  <div class="quick-app-table">
+    <div class="qa-cell">
+      <div class="qa-name">GitHub (наш hero)</div>
+      <div class="qa-stats">Tier 2-3 на первом proof, Tier 1 на повторе</div>
+      <div class="qa-desc">App-switch OAuth (если GitHub mobile установлен) или ASWebAuthSession с warm Safari cookie. После первого. Face ID через Hack 2.</div>
+    </div>
+    <div class="qa-cell">
+      <div class="qa-name">Strava</div>
+      <div class="qa-stats">Tier 2 (warm) / Tier 3 (cold)</div>
+      <div class="qa-desc">Mobile OAuth через strava://oauth/mobile/authorize. Community жалуется на clunky in-app-browser fallback. Полированный native handoff. в работе.</div>
+    </div>
+    <div class="qa-cell">
+      <div class="qa-name">Duolingo / LeetCode</div>
+      <div class="qa-stats">Tier 3 (cookie reuse only)</div>
+      <div class="qa-desc">Нет публичного OAuth для нашего proof'а. Только cookie path через WKWebView. iOS consent sheet. Android тихо.</div>
+    </div>
+    <div class="qa-cell">
+      <div class="qa-name">Codeforces / StackOverflow</div>
+      <div class="qa-stats">Tier 0 (public API, no auth)</div>
+      <div class="qa-desc">~1 тап. Но фактически proof про handle, не про юзера. Надо binding через nonce-в-профиле = +1 шаг ownership.</div>
+    </div>
+    <div class="qa-cell">
+      <div class="qa-name">Anthropic Console</div>
+      <div class="qa-stats">"Off the ladder" — admin key paste</div>
+      <div class="qa-desc">Не массовый flow. Юзер вставляет sk-ant-admin... key. Один раз. Дальше Face ID для повторов. Niche B2B credibility badge.</div>
+    </div>
+    <div class="qa-cell">
+      <div class="qa-name">Spotify</div>
+      <div class="qa-stats">Tier 3 only (после Feb-2026 lockdown)</div>
+      <div class="qa-desc">Tier proof через OAuth МЁРТВ. Listening history ещё работает но dev mode capped at 5 users. Cookie path = grey ToS.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Detailed scenarios with mockups -->
+<section>
+  <h2><span class="num">10</span> Сценарии с моковыми экранами</h2>
+  <p class="lead">Те же три сценария что выше, но с раскадровкой. Каждый кадр = реальный экран который видит юзер. Свайпни вправо если не помещается.</p>
+
+  <h3>Сценарий 1. Warm returning. 1 тап, ~3-4 секунды</h3>
+  <div class="scenario-detail">
+    <div class="frames">
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <p style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;">REP</p>
+              <h6 style="margin: 6px 0 14px;">Your context</h6>
+              <div class="row">
+                <div class="icon">G</div>
+                <div class="label">
+                  <div style="font-weight: 600;">GitHub</div>
+                  <div class="meta">octocat · 1,234 contributions</div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="icon" style="background: #FC4C02;">S</div>
+                <div class="label">
+                  <div style="font-weight: 600;">Strava</div>
+                  <div class="meta">142 km this month</div>
+                </div>
+              </div>
+              <div class="btn">Prove again</div>
+              <p class="muted" style="margin-top: 10px; text-align: center;">+ Add platform</p>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">1</span><strong>REP idle</strong>
+          GitHub уже доказан раньше. Тап "Prove again". В фоне уже открыт WebSocket к verifier (Hack 1).
+          <div class="why">0 секунд</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="faceid-overlay">
+              <div class="faceid-icon">⌒</div>
+              <h6>Face ID</h6>
+              <p>Use Face ID to refresh GitHub access</p>
+              <div class="btn cancel">Cancel</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">2</span><strong>iOS Face ID</strong>
+          Keychain под .biometryCurrentSet просит подтверждение. Юзер просто смотрит на экран.
+          <div class="why">~0.5 с</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <div style="text-align: center; margin: 24px 0 16px;">
+                <div style="width: 60px; height: 60px; margin: 0 auto; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 26px; color: #000;">✓</div>
+              </div>
+              <h6 style="text-align: center;">Proof minted</h6>
+              <p style="text-align: center; color: #fff;">octocat · 1,247 contributions</p>
+              <p class="muted" style="text-align: center; font-size: 10px;">Notarized by rep-notary-1<br>Valid 90 days</p>
+              <div class="btn">Share</div>
+              <div class="btn subtle">What was proved ⌄</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">3</span><strong>Success</strong>
+          Refresh-token → access → GraphQL → proof. Всё спряталось под Face-ID анимацию (Hack 6).
+          <div class="why">~3-4 с от тапа</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="scenario-meta">
+      <div><strong>1</strong>тап</div>
+      <div><strong>~3-4 с</strong>от тапа до proof</div>
+      <div><strong>0</strong>app-switch</div>
+      <div><strong>0</strong>consent</div>
+      <div><strong>1</strong>биометрия</div>
+    </div>
+  </div>
+
+  <h3>Сценарий 2. Warm first time. 2-3 тапа, ~7-10 секунд</h3>
+  <div class="scenario-detail">
+    <div class="frames">
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <p style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;">REP</p>
+              <h6 style="margin: 6px 0 14px;">Add your first proof</h6>
+              <div class="row">
+                <div class="icon">G</div>
+                <div class="label">
+                  <div style="font-weight: 600;">GitHub contributions</div>
+                  <div class="meta">~7 sec · easy</div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="icon" style="background: #FC4C02;">S</div>
+                <div class="label">
+                  <div style="font-weight: 600;">Strava activities</div>
+                  <div class="meta">~10 sec · easy</div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="icon" style="background: #58CC02;">D</div>
+                <div class="label">
+                  <div style="font-weight: 600;">Duolingo streak</div>
+                  <div class="meta">~12 sec · medium</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">1</span><strong>REP entry</strong>
+          Юзер видит список таргетов. Тап по GitHub. WebSocket уже warm (Hack 1).
+          <div class="why">тап #1</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <div style="text-align: center; margin-top: 16px;">
+                <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 24px; font-weight: 900;">⌥</div>
+                <h6>Connect GitHub</h6>
+                <p style="margin-top: 8px;">We'll ask GitHub to share:</p>
+              </div>
+              <div style="padding: 0 4px; margin: 8px 0;">
+                <p style="font-size: 10px;">• your username</p>
+                <p style="font-size: 10px;">• your 2026 contribution count</p>
+              </div>
+              <p class="muted" style="font-size: 10px;">Your password never leaves GitHub. We see only what they say, signed.</p>
+              <div class="btn">Continue with GitHub</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">2</span><strong>Pre-sheet (Hack 3)</strong>
+          REP объясняет что сейчас произойдёт. iOS-шит больше не surprise.
+          <div class="why">тап #2 на Continue</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="ios-sheet-overlay">
+              <div class="ios-sheet">
+                <h6>"REP" Wants to Use "github.com" to Sign In</h6>
+                <p>This allows the app and website to share information about you.</p>
+                <div class="btn">Continue</div>
+                <div class="btn cancel">Cancel</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">3</span><strong>iOS system sheet</strong>
+          ASWebAuthSession триггерит iOS-шит для shared cookies. Юзер ждал это благодаря Hack 3.
+          <div class="why">тап #3 (но юзер не сопротивляется)</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen github">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="gh-bar">github.com</div>
+            <div class="scrn">
+              <div style="text-align: center; padding-top: 8px;">
+                <div style="width: 32px; height: 32px; margin: 0 auto 8px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <span style="color: #000; font-weight: 900;">⌥</span>
+                </div>
+                <p style="color: #f0f6fc;">Signed in as <strong>octocat</strong></p>
+              </div>
+              <h6 style="margin-top: 12px;">Authorize REP?</h6>
+              <p style="font-size: 10px; color: #8b949e;">REP wants access to your public profile.</p>
+              <ul style="font-size: 10px; padding-left: 16px; margin: 8px 0; color: #f0f6fc;">
+                <li>Read user profile</li>
+                <li>Read contribution graph</li>
+              </ul>
+              <div class="btn gh">Authorize REP</div>
+              <div class="btn outline" style="border-color: #30363d;">Cancel</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">4</span><strong>GitHub consent</strong>
+          Cookie warm — юзер не вводит ничего. Один тап Authorize. Auto-skip на повторах.
+          <div class="why">~5-6 с</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <p style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;">Generating proof</p>
+              <h6 style="margin: 6px 0 14px;">Just a moment</h6>
+              <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 12px;">
+                <div class="stage done">✓<span>Connecting to GitHub</span></div>
+                <div class="stage active">●<span>Confirming with notary</span></div>
+                <div class="stage todo">○<span>Sealing your proof</span></div>
+              </div>
+              <p class="muted" style="margin-top: 12px; font-size: 10px;">~1 second left</p>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">5</span><strong>Notarize</strong>
+          Universal Link auto-return. Прогресс по стадиям, никогда слова "Loading".
+          <div class="why">~1-2 с (или прячется в анимацию через Hack 6)</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <div style="text-align: center; margin: 24px 0 16px;">
+                <div style="width: 60px; height: 60px; margin: 0 auto; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 26px; color: #000;">✓</div>
+              </div>
+              <h6 style="text-align: center;">Proof minted</h6>
+              <p style="text-align: center; color: #fff;">octocat · 1,234 contributions</p>
+              <p class="muted" style="text-align: center; font-size: 10px;">Refresh token saved to Keychain.<br>Next proof. one tap + Face ID.</p>
+              <div class="btn">Share</div>
+              <div class="btn subtle">What was proved ⌄</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">6</span><strong>Success + setup для Hack 2</strong>
+          Refresh-token упал в Keychain под биометрией. Следующий раз будет 1 тап.
+          <div class="why">~7-10 с total</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="scenario-meta">
+      <div><strong>2-3</strong>тапа</div>
+      <div><strong>~7-10 с</strong>total</div>
+      <div><strong>1</strong>app-switch (auto-return)</div>
+      <div><strong>2</strong>consent (iOS + GitHub, GitHub auto-skip на повторе)</div>
+    </div>
+  </div>
+
+  <h3>Сценарий 3. Cold. 4-5 тапов, ~20-30 секунд</h3>
+  <div class="scenario-detail">
+    <div class="frames">
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <p style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;">REP</p>
+              <h6 style="margin: 6px 0 14px;">Add your first proof</h6>
+              <div class="row">
+                <div class="icon">G</div>
+                <div class="label">
+                  <div style="font-weight: 600;">GitHub contributions</div>
+                  <div class="meta">~7 sec · easy</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">1</span><strong>REP entry</strong>
+          Та же entry-page. Юзер не залогинен нигде.
+          <div class="why">тап #1</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="ios-sheet-overlay">
+              <div class="ios-sheet">
+                <h6>"REP" Wants to Use "github.com" to Sign In</h6>
+                <p>This allows the app and website to share information about you.</p>
+                <div class="btn">Continue</div>
+                <div class="btn cancel">Cancel</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">2</span><strong>iOS sheet</strong>
+          (Pre-sheet объяснение пропущено для краткости).
+          <div class="why">тап #2</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen github">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="gh-bar">github.com/login</div>
+            <div class="scrn">
+              <div style="text-align: center; margin-top: 4px;">
+                <div style="width: 28px; height: 28px; margin: 0 auto 6px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-size: 16px; font-weight: 900;">⌥</div>
+              </div>
+              <h6 style="text-align: center; font-size: 13px;">Sign in to GitHub</h6>
+              <div class="field">Username or email</div>
+              <div class="field">Password</div>
+              <div class="btn gh">Sign in</div>
+              <p class="muted" style="text-align: center; font-size: 9px; margin-top: 6px;">Forgot password?</p>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">3</span><strong>GitHub login form</strong>
+          Ввод email + пароль. Авто-заполнение iCloud Keychain помогает если креды там есть.
+          <div class="why">~10-20 с · самая медленная точка</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen github">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="gh-bar">github.com</div>
+            <div class="scrn">
+              <h6 style="text-align: center; font-size: 13px;">Two-factor</h6>
+              <p style="text-align: center; font-size: 10px;" class="muted">Enter the 6-digit code</p>
+              <div style="display: flex; gap: 3px; justify-content: center; margin: 12px 0;">
+                <div class="field" style="width: 18px; text-align: center;">4</div>
+                <div class="field" style="width: 18px; text-align: center;">2</div>
+                <div class="field" style="width: 18px; text-align: center;">8</div>
+                <div class="field" style="width: 18px; text-align: center;">1</div>
+                <div class="field" style="width: 18px; text-align: center;">_</div>
+                <div class="field" style="width: 18px; text-align: center;">_</div>
+              </div>
+              <p class="muted" style="text-align: center; font-size: 9px;">From your authenticator app</p>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">4</span><strong>2FA (если включена)</strong>
+          Открыть Authy / Google Auth → код → ввести. Iframe не помогает.
+          <div class="why">~5-15 с дополнительно</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen github">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="gh-bar">github.com</div>
+            <div class="scrn">
+              <p style="font-size: 10px; color: #f0f6fc;">Signed in as <strong>octocat</strong></p>
+              <h6 style="margin-top: 8px;">Authorize REP?</h6>
+              <ul style="font-size: 10px; padding-left: 14px; color: #f0f6fc;">
+                <li>Read user profile</li>
+                <li>Read contributions</li>
+              </ul>
+              <div class="btn gh">Authorize REP</div>
+              <div class="btn outline" style="border-color: #30363d;">Cancel</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">5</span><strong>Consent</strong>
+          Теперь как в warm. Тап Authorize.
+          <div class="why">тап #3 (или #4 с 2FA)</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <h6 style="margin: 6px 0 14px;">Just a moment</h6>
+              <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 12px;">
+                <div class="stage done">✓<span>Connecting to GitHub</span></div>
+                <div class="stage active">●<span>Confirming with notary</span></div>
+                <div class="stage todo">○<span>Sealing your proof</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">6</span><strong>Notarize</strong>
+          Universal Link auto-return. Те же стадии что в warm.
+          <div class="why">~1-2 с</div>
+        </div>
+      </div>
+
+      <div class="frame-arrow">→</div>
+
+      <div class="frame">
+        <div class="phone">
+          <div class="screen rep">
+            <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+            <div class="scrn">
+              <div style="text-align: center; margin: 24px 0 12px;">
+                <div style="width: 60px; height: 60px; margin: 0 auto; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 26px; color: #000;">✓</div>
+              </div>
+              <h6 style="text-align: center;">Proof minted</h6>
+              <p style="text-align: center; color: #fff;">octocat · 1,234 contributions</p>
+              <div class="btn">Share</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-cap">
+          <span class="num">7</span><strong>Success</strong>
+          Юзер прошёл cold-onboarding и теперь warm для следующих proof'ов.
+          <div class="why">~20-30 с total</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="scenario-meta">
+      <div><strong>4-5</strong>тапов</div>
+      <div><strong>~20-30 с</strong>total</div>
+      <div><strong>main slip:</strong> ввод пароля + 2FA</div>
+      <div><strong>fix:</strong> на повторах = Сценарий 1 (1 тап, 3-4 с)</div>
+    </div>
+  </div>
+</section>
+
+<!-- Multi-endpoint / kitchen-sink proofs -->
+<section>
+  <h2><span class="num">11</span> Когда нужно много данных. Multi-endpoint proof'ы</h2>
+  <p class="lead">Один proof не всегда = одно число. Для богатого контекста (музыкальный вкус, спортивный профиль, dev fingerprint) нужно дёрнуть несколько endpoint'ов с одной платформы. Хорошие новости. TLSNotary это умеет нативно через одну TLS-сессию.</p>
+
+  <h3>Три размера задачи "много данных"</h3>
+  <div class="sizes">
+    <div class="size-card">
+      <span class="size-num">Size 1</span>
+      <h5>Большой JSON от одного endpoint</h5>
+      <div class="verdict">✓ почти бесплатно</div>
+      <div class="desc">Spotify <code>/me/top/tracks</code> с 50 треками. Strava <code>/activities</code> со 100 записями. Proxy mode почти flat по payload (1KB→51KB поменяло время с ~1.6с до ~1.6с в бенчмарках). MPC mode тоже почти flat благодаря defer_decryption.</div>
+    </div>
+    <div class="size-card">
+      <span class="size-num">Size 2</span>
+      <h5>Много endpoint'ов одной платформы</h5>
+      <div class="verdict">✓ одна TLS-сессия</div>
+      <div class="desc">Spotify-кейс. Открываем одну TLS-сессию к api.spotify.com, дёргаем 5-6 endpoint'ов последовательно или pipelined, нотарь подписывает весь transcript. Один attestation, один Merkle root, selective reveal по byte-range'ам. ~2-4с в proxy mode.</div>
+    </div>
+    <div class="size-card med">
+      <span class="size-num">Size 3</span>
+      <h5>Кросс-платформенная композиция</h5>
+      <div class="verdict med">⚙ задача Proof Graph Runtime</div>
+      <div class="desc">"Я serious dev" = f(github.contributions, stackoverflow.reputation, leetcode.rating). Каждая платформа = отдельный proof, отдельная сессия. Композиция считается на стороне REP без новой минтинг-сессии. <strong>Это compounding moment графа.</strong></div>
+    </div>
+  </div>
+
+  <h3>Как Size 2 работает технически (одна сессия, много запросов)</h3>
+
+  <div class="session-box">
+    <div class="session-label">пример Spotify deep profile</div>
+
+    <div class="session-handshake">TLS handshake → commit к server_name "api.spotify.com" + cert</div>
+
+    <div class="session-requests">
+      <div class="req-line">
+        <div class="label"><span class="verb">GET</span> /v1/me</div>
+        <div class="arrow">→</div>
+        <div class="ms">identity · ~200мс</div>
+      </div>
+      <div class="req-line">
+        <div class="label"><span class="verb">GET</span> /v1/me/top/artists?limit=50</div>
+        <div class="arrow">→</div>
+        <div class="ms">musical taste · ~250мс</div>
+      </div>
+      <div class="req-line">
+        <div class="label"><span class="verb">GET</span> /v1/me/top/tracks?limit=50</div>
+        <div class="arrow">→</div>
+        <div class="ms">tracks · ~250мс</div>
+      </div>
+      <div class="req-line">
+        <div class="label"><span class="verb">GET</span> /v1/me/player/recently-played</div>
+        <div class="arrow">→</div>
+        <div class="ms">activity · ~200мс</div>
+      </div>
+      <div class="req-line">
+        <div class="label"><span class="verb">GET</span> /v1/me/playlists</div>
+        <div class="arrow">→</div>
+        <div class="ms">curation · ~300мс</div>
+      </div>
+      <div class="req-line">
+        <div class="label"><span class="verb">GET</span> /v1/me/following?type=artist</div>
+        <div class="arrow">→</div>
+        <div class="ms">social · ~200мс</div>
+      </div>
+    </div>
+
+    <div class="session-handshake">TLS close. Transcript ~30-50KB. max_recv_data ставим 64KB up front.</div>
+
+    <div class="session-arrow">↓</div>
+
+    <div class="session-output">
+      <strong>ONE Attestation. Merkle root над всем transcript'ом</strong>
+      <p>Selective reveal по byte-range'ам. Раскрываем 6 групп response-fields (top_artists, top_tracks, recently_played, playlists, following, identity). Redact 6× <code>Authorization: Bearer …</code> в request-bytes. Один signing key, одна подпись нотаря, одна VCC с 6 фактами внутри.</p>
+    </div>
+  </div>
+
+  <p style="color: var(--text-dim); font-size: 13px; margin-top: 8px;">
+    <strong style="color: var(--text);">Рычаги в TLSNotary:</strong>
+    <code>MpcTlsConfig::max_sent_data</code> / <code>max_recv_data</code> декларируем заранее (TLSNotary preprocess'ит circuit под этот размер). <code>defer_decryption=true</code> по дефолту. response декриптится локально после close, без MPC overhead. <code>ProveConfig</code>'s <code>reveal_sent</code>/<code>reveal_recv</code> принимают <em>несколько</em> byte-range'ов, так что многократный redaction в одном transcript'е работает из коробки.
+  </p>
+
+  <h3>Per-platform composition recipes</h3>
+  <p class="lead" style="margin-bottom: 8px;">Какие endpoint'ы батчить в одной сессии для каждой Tier-1 платформы. чтобы получить максимальный signal за один TLS handshake.</p>
+
+  <table class="compose-table">
+    <thead>
+      <tr>
+        <th>Платформа</th>
+        <th>Endpoints в одной сессии</th>
+        <th>Что revealед</th>
+        <th>Время</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="platform">GitHub</td>
+        <td class="endpoints">
+          POST /graphql<br>
+          (1 query, batch fields)
+        </td>
+        <td class="reveals">contributions + repos + languages + sponsorships + followers + topRepositories — всё в одном GraphQL query через field selection. Native GraphQL batching.</td>
+        <td class="time">~1-2 с</td>
+      </tr>
+      <tr>
+        <td class="platform">Strava</td>
+        <td class="endpoints">
+          GET /v3/athlete<br>
+          GET /v3/athlete/stats<br>
+          GET /v3/athlete/activities?per_page=30<br>
+          GET /v3/athlete/zones
+        </td>
+        <td class="reveals">Athletic DNA. lifetime totals, last 30 activities (distance, time, pace, type), HR-zones, PR'ы. Каждый endpoint в JSON, redact 4× bearer.</td>
+        <td class="time">~2-3 с</td>
+      </tr>
+      <tr>
+        <td class="platform">Duolingo</td>
+        <td class="endpoints">
+          GET /2017-06-30/users/{id}<br>
+          ?fields=streak,totalXp,courses,leagueRank
+        </td>
+        <td class="reveals">Streak + totalXp + список изучаемых языков + lig-ранг в одном вызове через field selection. (Сам endpoint поддерживает GraphQL-style ?fields=.)</td>
+        <td class="time">~1-2 с</td>
+      </tr>
+      <tr>
+        <td class="platform">Anthropic Console</td>
+        <td class="endpoints">
+          GET /v1/organizations/cost_report<br>
+          ?starting_at=…&ending_at=…<br>
+          GET /v1/organizations/usage_report/messages
+        </td>
+        <td class="reveals">$ spend по дням за период + token usage breakdown по моделям и workspace. 2 endpoint'а, один admin-key header.</td>
+        <td class="time">~1-2 с</td>
+      </tr>
+      <tr>
+        <td class="platform">Codeforces</td>
+        <td class="endpoints">
+          GET /api/user.info?handles={h}<br>
+          GET /api/user.rating?handle={h}<br>
+          GET /api/user.status?handle={h}&count=20
+        </td>
+        <td class="reveals">Rating + maxRating + rank + полная история контестов + последние 20 решений. Все public, no auth. Самый дешёвый kitchen-sink.</td>
+        <td class="time">~1-2 с</td>
+      </tr>
+      <tr>
+        <td class="platform">Stack Overflow</td>
+        <td class="endpoints">
+          GET /2.3/me?site=stackoverflow<br>
+          GET /2.3/me/answers?site=stackoverflow<br>
+          GET /2.3/me/tags?site=stackoverflow
+        </td>
+        <td class="reveals">Reputation + badges + последние 30 ответов + топ-теги. OAuth bearer на всех трёх (один redaction map).</td>
+        <td class="time">~1-2 с</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-icon">!</div>
+    <div>
+      <strong>Spotify. плохой пример богатого контекста после Feb-2026 lockdown</strong>
+      <p>Tier proof через официальный API мёртв (поле <code>product</code> убрали из <code>/v1/me</code>). Dev Mode capped at 5 users, Extended Quota требует 250k MAU. Listening history endpoint'ы (<code>/recently-played</code>, <code>/top/*</code>) ещё работают, но публичный продукт на них не построить. Cookie path через <code>open.spotify.com</code> + <code>sp_dc</code> → <code>get_access_token</code> даёт более широкий scope, но это grey ToS и Spotify hardens internal endpoints. Может потребовать MPC mode (user residential IP).</p>
+    </div>
+  </div>
+
+  <h3>UX delta когда proof. multi-source</h3>
+  <p class="lead" style="margin-bottom: 16px;">Тот же флоу что в Сценарии 2, но с косметическими отличиями в loading и success state.</p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+
+    <div class="frame" style="min-width: 0;">
+      <div class="phone">
+        <div class="screen rep">
+          <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+          <div class="scrn">
+            <p style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;">Generating Strava proof</p>
+            <h6 style="margin: 6px 0 14px;">Confirming 4 sources</h6>
+            <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 12px;">
+              <div class="stage done">✓<span>Identity</span></div>
+              <div class="stage done">✓<span>Lifetime stats</span></div>
+              <div class="stage active">●<span>Recent activities</span></div>
+              <div class="stage todo">○<span>Heart-rate zones</span></div>
+            </div>
+            <p class="muted" style="margin-top: 12px; font-size: 10px;">~1 second left</p>
+          </div>
+        </div>
+      </div>
+      <div class="frame-cap" style="margin-top: 12px;">
+        <strong>Loading. multi-source</strong>
+        Стадии = endpoint'ы. Юзер видит сколько источников в работе. Полностью прозрачно.
+      </div>
+    </div>
+
+    <div class="frame" style="min-width: 0;">
+      <div class="phone">
+        <div class="screen rep">
+          <div class="status-bar"><span>9:41</span><span>📶 ●●●</span></div>
+          <div class="scrn">
+            <div style="text-align: center; margin: 16px 0 10px;">
+              <div style="width: 50px; height: 50px; margin: 0 auto; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 22px; color: #000;">✓</div>
+            </div>
+            <h6 style="text-align: center;">Strava context minted</h6>
+            <p style="text-align: center; color: #fff; font-size: 10px;">runner_42</p>
+            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0;"><span class="muted">Lifetime</span><span>2,847 km</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0;"><span class="muted">Last 30d</span><span>142 km · 18 runs</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0;"><span class="muted">Best pace</span><span>4:32 /km</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0;"><span class="muted">PRs</span><span>3 this month</span></div>
+            </div>
+            <div class="btn">Share context</div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-cap" style="margin-top: 12px;">
+        <strong>Success. multi-fact</strong>
+        Не одно число, а компактный профиль. Каждое поле = отдельный revealed range в одной attestation.
+      </div>
+    </div>
+
+  </div>
+
+  <p style="color: var(--text-dim); font-size: 13px; margin-top: 24px;">
+    <strong style="color: var(--text);">Главный takeaway.</strong> Богатые proof'ы не дороже простых по архитектуре. Та же одна TLS сессия, тот же один Face ID на повторе. Меняется только <code>max_recv_data</code> в config'е прувера и количество строк в reveal map. UX отличается только тем, что loading state показывает несколько стадий, а success state показывает структурированный профиль вместо одного числа.
+  </p>
+</section>
+
+<footer>
+  REP research. Mobile UX onboarding · 2026-06-02 · полные данные с цитатами и code sketches в <code>mobile-ux-deep-research.md</code> в той же папке.
+</footer>
+
+</body>
+</html>
