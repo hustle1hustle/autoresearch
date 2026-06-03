@@ -96,7 +96,9 @@ final class MockProver: TLSNProving {
 /// Resolves the active prover from Config.
 enum Prover {
     static func make() -> TLSNProving {
-        // if !Config.useMockProver { return UniFFIProver() }   // item ⑧
+        #if canImport(TlsnProver)
+        if !Config.useMockProver { return UniFFIProver() }   // item ⑧ (auto once xcframework added)
+        #endif
         return MockProver()
     }
 }

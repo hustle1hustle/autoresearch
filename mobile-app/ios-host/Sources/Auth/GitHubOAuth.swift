@@ -20,15 +20,14 @@ final class GitHubOAuth: NSObject, AuthProviding, ASWebAuthenticationPresentatio
         }
         guard #available(iOS 17.4, *) else { throw AuthError.needsIOS174 }
 
-        let pkce = PKCE.generate()
+        // GitHub App user-to-server flow: no `scope` query (scopes come from the
+        // App's user permissions). The REP backend does the code→token exchange
+        // (client secret off-device) and 302s tokens back to the callback.
         let state = UUID().uuidString
         var comps = URLComponents(string: Config.githubAuthorizeURL)!
         comps.queryItems = [
             .init(name: "client_id", value: Config.githubClientID),
             .init(name: "redirect_uri", value: Config.githubRedirectURI),
-            .init(name: "scope", value: Config.githubScope),
-            .init(name: "code_challenge", value: pkce.challenge),
-            .init(name: "code_challenge_method", value: "S256"),
             .init(name: "state", value: state),
         ]
         let authURL = comps.url!
