@@ -15,7 +15,8 @@ Tester обновляет статусы по мере прогона.
 - TLSN repo origin commit (если есть `.git/`). Знай что proxy mode merged в `crates/examples/proxy/proxy.rs` после April 2026 (`../00-tlsnotary.md` §2).
 - Try running a notarize. посмотри в логах. указывается mode.
 
-**Status.** `OPEN`
+**Status.** `RESOLVED` (from source — `tlsnotary/tlsn-extension`) — **proxy = YES, MPC = YES.**
+Evidence: `packages/tlsn-mobile/src/lib.rs:187-190` defines `Mode { Mpc, Proxy }` ("Proxy: notary observes the TLS session via its proxy endpoint"); `packages/tlsn-mobile/src/prover.rs:44-45` maps both to `ProverMode`; the iOS UniFFI bridge parses `mode: "Mpc"|"Proxy"` (`app/mobile/modules/tlsn-native/ios/TlsnNativeModule.swift:69-77`); the app ships a working Proxy-mode toggle (`app/mobile/app/(tabs)/settings.tsx`, `app/mobile/lib/useVerifierUrl.ts`, `DEFAULT_PROXY_MODE=false`). **We ship Default = Proxy**, auto-flip to MPC on 403/WAF. Final on-device confirmation (Mac): run a notarize with `mode:'Proxy'` and check `onProveProgress`/native logs.
 
 **If MPC-only:** все expected-delta'ы в `hacks/` для warm-returning будут показывать абсолютные числа ~13 с, а не ~3-4 с. Hack 6 (notarize-in-animation) станет неприменим. отметь это в test-procedure'ах.
 
@@ -32,7 +33,9 @@ Tester обновляет статусы по мере прогона.
 - Если есть `Prover::open_websocket()` отдельно от `Prover::run()` — Hack 1 implementable.
 - Если только blocking `Prover.notarize(target, request)` — нужен forking подход или мы не можем сделать Hack 1.
 
-**Status.** `OPEN`
+**Status.** `RESOLVED (negative)` (from source) — **No separate `connect()`/WebSocket-open API.**
+The native surface is one-shot `prove(request, options, progress)` and the two-phase `proveUntilReveal(request, options)` → `proveFinalize(sessionId, approved)` (`packages/tlsn-mobile/src/lib.rs:501-547`; bridged at `TlsnNativeModule.swift:246-319`). Phase A's docstring is literally "1. Register session with verifier 2. Create prover and MPC setup 3. Send HTTP request" — the WebSocket connect is **fused** with sending the request, and the request carries the **post-OAuth bearer**, so nothing can be opened before OAuth completes. ⇒ **Hack 1 (true WebSocket pre-warm) is NOT implementable on the current build without forking TLSN (forbidden).**
+Mitigation (host-side, smaller win, no fork): on view `.task`, pre-generate PKCE + warm **DNS/TLS to the verifier host** via a throwaway `URLSession` HEAD request. Expected delta ~100-300 ms (not the specced ~500-1000 ms). **Hack 6 is unaffected** — notarize starts at OAuth completion and runs under the return animation regardless of pre-warm. Re-open if a future build exposes `session.open()`/`connect()`.
 
 **If no separation:** Hack 1 deltas будут 0 (нечего pre-warm'ить). Документируй в `hacks/hack-1/test-procedure.md` секции "Build limitation".
 
