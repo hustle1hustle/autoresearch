@@ -1,17 +1,34 @@
 # AIO Test Kit — REP UX Hacks on TLSNotary Mobile
 
-Test kit для measurable validation 6 UX-хаков из `mobile-ux-deep-research.md` против stock TLSNotary mobile build на всех 7 Tier-1 платформах.
+Test kit для measurable validation 6 UX-хаков из `mobile-ux-deep-research.md` против stock TLSNotary mobile build на всех 8 Tier-1 платформах.
 
 **Цель.** Warm returning ≤ 2 тапа / ≤ 7 с. Cold ≤ 5 тапов / ≤ 30 с. Beat stock TLSN на каждой drop-off точке.
+
+## Quick start
+
+Если ты new dev. **start with [`setup/06-first-proof-walkthrough.md`](setup/06-first-proof-walkthrough.md)** — zero-to-success на твоём iPhone за ~30 минут. Pre-reqs там и references на остальные setup гайды.
+
+Если ты возвращаешься. см. `RUN-ORDER.md` для testing flow.
+
+Если что-то сломалось. **[`troubleshooting.md`](troubleshooting.md)** в корне kit'а. Common failures + fixes consolidated.
 
 ## Что внутри
 
 ```
-aio-test-kit/
+test-kit/
 ├── README.md                  ← ты здесь
 ├── RUN-ORDER.md               ← рекомендованная последовательность тестов
 ├── ANTI-PATTERNS-CHECKLIST.md ← печатный one-pager что НЕ делать
-├── open-questions.md          ← что real-device тесты должны выяснить
+├── open-questions.md          ← 5 questions для real-device тестов
+├── troubleshooting.md         ← consolidated common failures + fixes
+├── setup/                     ← end-to-end setup guides (start here)
+│   ├── README.md              ← когда что читать
+│   ├── 01-xcframework-build.md   ← TLSN prover → .xcframework
+│   ├── 02-oauth-apps.md          ← GitHub + Strava + StackOverflow OAuth setup
+│   ├── 03-self-hosted-notary.md  ← Docker notary с whitelist
+│   ├── 04-universal-links.md     ← AASA + entitlement + testing
+│   ├── 05-cookie-probe.md        ← Safari Inspector для cookie names
+│   └── 06-first-proof-walkthrough.md ← zero to success на real iPhone
 ├── tlsn-build/                ← DROP YOUR TLSN MOBILE BUILD HERE
 ├── baseline/                  ← 3 stock-TLSN сценария (control group)
 │   ├── warm-returning.md
@@ -24,10 +41,11 @@ aio-test-kit/
 │   ├── hack-4/  Universal Link auto-return
 │   ├── hack-5/  conditional UI passkey
 │   └── hack-6/  notarize-in-animation
-├── targets/                   ← 7 платформ. OAuth, endpoint, redaction
+├── targets/                   ← 8 платформ. OAuth, endpoint, redaction
 │   ├── github.md  ← HERO
 │   ├── strava.md
 │   ├── duolingo.md
+│   ├── luma.md
 │   ├── codeforces.md
 │   ├── stackoverflow.md
 │   ├── leetcode.md
