@@ -1,0 +1,207 @@
+// capture-android.kt.snippet
+// Ready-to-paste Kotlin instrumentation snippet for AIO test kit.
+// Drop into your host-shell app, wire calls в каждом stage flow.
+// References event-spec.md for full field list.
+
+package com.rep.host.measurement
+
+import android.content.Context
+import android.os.Build
+import android.os.SystemClock
+import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.util.UUID
+
+@Serializable
+data class ProofAttemptEvent(
+    val type: String,                // "cta.tap", "notarize.responseReceived", etc
+    val timestamp: Long,             // unix ms
+    val attemptId: String,
+    val platform: String,
+    val mode: String,                // "proxy" | "mpc"
+    val appState: String,            // "warm-returning" | etc
+    val hackVariant: String,         // "stock" | "hack-1" | etc
+    val deviceOs: String = "Android",
+    val osVersion: String,
+    val appVersion: String,
+    val anonId: String,
+    val payload: Map<String, String> = emptyMap()  // simplified для serialization
+)
+
+private data class AttemptContext(
+    val attemptId: String,
+    val platform: String,
+    val mode: String,
+    val appState: String,
+    val hackVariant: String,
+    val startTimestamp: Long
+)
+
+object ProofAttemptCapture {
+
+    private const val TAG = "ProofAttempt"
+    private const val PREFS = "rep.measurement"
+    private const val FILE = "proof-attempts.jsonl"
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+
+    private var currentAttempt: AttemptContext? = null
+    private lateinit var anonId: String
+    private lateinit var appContext: Context
+
+    fun init(ctx: Context) {
+        appContext = ctx.applicationContext
+        val prefs = appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        anonId = prefs.getString("anonId", null) ?: run {
+            val new = UUID.randomUUID().toString()
+            prefs.edit().putString("anonId", new).apply()
+            new
+        }
+    }
+
+    fun startAttempt(platform: String, mode: String, appState: String, hackVariant: String) {
+        val ctx = AttemptContext(
+            attemptId = UUID.randomUUID().toString(),
+            platform = platform,
+            mode = mode,
+            appState = appState,
+            hackVariant = hackVariant,
+            startTimestamp = System.currentTimeMillis()
+        )
+        currentAttempt = ctx
+        emit("start", mapOf("entryScreen" to "main"))
+    }
+
+    fun emit(type: String, payload: Map<String, String> = emptyMap()) {
+        val ctx = currentAttempt ?: run {
+            Log.e(TAG, "emit without active attempt: $type")
+            return
+        }
+
+        val event = ProofAttemptEvent(
+            type = type,
+            timestamp = System.currentTimeMillis(),
+            attemptId = ctx.attemptId,
+            platform = ctx.platform,
+            mode = ctx.mode,
+            appState = ctx.appState,
+            hackVariant = ctx.hackVariant,
+            osVersion = Build.VERSION.RELEASE,
+            appVersion = getAppVersion(),
+            anonId = anonId,
+            payload = payload
+        )
+
+        scope.launch { persist(event) }
+
+        Log.d(TAG, "$type attemptId=${ctx.attemptId} ms=${event.timestamp - ctx.startTimestamp}")
+    }
+
+    fun endAttempt() {
+        currentAttempt = null
+    }
+
+    private fun persist(event: ProofAttemptEvent) {
+        try {
+            val file = File(appContext.filesDir, FILE)
+            val line = json.encodeToString(event) + "\n"
+            file.appendText(line)
+        } catch (e: Exception) {
+            Log.e(TAG, "persist failed", e)
+        }
+    }
+
+    fun readAll(): List<ProofAttemptEvent> {
+        val file = File(appContext.filesDir, FILE)
+        if (!file.exists()) return emptyList()
+        return file.readLines().mapNotNull { line ->
+            try { json.decodeFromString<ProofAttemptEvent>(line) }
+            catch (e: Exception) { null }
+        }
+    }
+
+    fun clear() {
+        File(appContext.filesDir, FILE).delete()
+    }
+
+    fun exportCSV(): String {
+        val events = readAll()
+        val header = "type,timestamp,attemptId,platform,mode,appState,hackVariant\n"
+        val rows = events.joinToString("\n") {
+            "${it.type},${it.timestamp},${it.attemptId},${it.platform},${it.mode},${it.appState},${it.hackVariant}"
+        }
+        return header + rows
+    }
+
+    private fun getAppVersion(): String {
+        return try {
+            appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName ?: "?"
+        } catch (e: Exception) {
+            "?"
+        }
+    }
+}
+
+/*
+USAGE:
+
+// In Application.onCreate():
+class RepApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        ProofAttemptCapture.init(this)
+    }
+}
+
+// On entry в connect screen:
+ProofAttemptCapture.startAttempt(
+    platform = "github",
+    mode = "proxy",
+    appState = "warm-first",
+    hackVariant = "hack-1+6"  // или "stock" для baseline
+)
+
+// Hack 1 pre-warm:
+val t0 = SystemClock.elapsedRealtime()
+val session = TLSNProverSession.open(...)
+val durationMs = SystemClock.elapsedRealtime() - t0
+ProofAttemptCapture.emit("notarize.websocketConnected", mapOf(
+    "stage" to "prewarm",
+    "durationMs" to durationMs.toString(),
+    "success" to "true"
+))
+
+// CTA tap:
+ProofAttemptCapture.emit("cta.tap", mapOf("cta" to "connect_github"))
+
+// Hack 3 pre-sheet:
+ProofAttemptCapture.emit("presheet.shown")
+ProofAttemptCapture.emit("presheet.continue")
+
+// Universal Link return:
+ProofAttemptCapture.emit("webauth.universalLinkReturn", mapOf(
+    "returnMethod" to "app_link"
+))
+
+// Success:
+ProofAttemptCapture.emit("success", mapOf(
+    "totalDurationMs" to elapsed.toString(),
+    "notarizationsCount" to "1"
+))
+ProofAttemptCapture.endAttempt()
+
+// Or abandon:
+ProofAttemptCapture.emit("abandon", mapOf(
+    "lastStage" to "systemSheet"
+))
+ProofAttemptCapture.endAttempt()
+
+*/

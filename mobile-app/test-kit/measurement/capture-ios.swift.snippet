@@ -1,0 +1,244 @@
+// capture-ios.swift.snippet
+// Ready-to-paste Swift instrumentation snippet for AIO test kit.
+// Drop into your host-shell app, wire calls в каждом stage flow.
+// References event-spec.md for full field list.
+
+import Foundation
+import os.log
+
+// MARK: - Event Model
+
+struct ProofAttemptEvent: Codable {
+    let type: String                  // e.g. "cta.tap"
+    let timestamp: TimeInterval       // unix ms
+    let attemptId: String
+    let platform: String
+    let mode: String                  // "proxy" | "mpc"
+    let appState: String              // "warm-returning" | etc
+    let hackVariant: String           // "stock" | "hack-1" | etc
+    let deviceOs: String
+    let osVersion: String
+    let appVersion: String
+    let anonId: String
+
+    // Stage-specific (encoded as flat dictionary, decode based on type)
+    let payload: [String: AnyCodableValue]
+}
+
+// MARK: - Capture Manager
+
+class ProofAttemptCapture {
+    static let shared = ProofAttemptCapture()
+
+    private var currentAttempt: AttemptContext?
+
+    private let log = Logger(subsystem: "com.rep.host", category: "proof-attempt")
+
+    // Persistent anonymous ID, generated once per install
+    private lazy var anonId: String = {
+        if let id = UserDefaults.standard.string(forKey: "rep.anonId") {
+            return id
+        }
+        let new = UUID().uuidString
+        UserDefaults.standard.set(new, forKey: "rep.anonId")
+        return new
+    }()
+
+    // MARK: - Lifecycle
+
+    func startAttempt(platform: String, mode: String, appState: String, hackVariant: String) {
+        let context = AttemptContext(
+            attemptId: UUID().uuidString,
+            platform: platform,
+            mode: mode,
+            appState: appState,
+            hackVariant: hackVariant,
+            startTimestamp: Date().timeIntervalSince1970 * 1000
+        )
+        currentAttempt = context
+        emit(type: "start", payload: [
+            "entryScreen": .string("main")
+        ])
+    }
+
+    func emit(type: String, payload: [String: AnyCodableValue] = [:]) {
+        guard let ctx = currentAttempt else {
+            log.error("emit called without active attempt: \(type)")
+            return
+        }
+
+        let event = ProofAttemptEvent(
+            type: type,
+            timestamp: Date().timeIntervalSince1970 * 1000,
+            attemptId: ctx.attemptId,
+            platform: ctx.platform,
+            mode: ctx.mode,
+            appState: ctx.appState,
+            hackVariant: ctx.hackVariant,
+            deviceOs: "iOS",
+            osVersion: UIDevice.current.systemVersion,
+            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?",
+            anonId: anonId,
+            payload: payload
+        )
+
+        // Persist locally + optionally ship to analytics
+        Task { await persist(event) }
+
+        // Debug log for tester
+        log.debug("\(type) attemptId=\(ctx.attemptId) ms=\(event.timestamp - ctx.startTimestamp)")
+    }
+
+    func endAttempt() {
+        currentAttempt = nil
+    }
+
+    private func persist(_ event: ProofAttemptEvent) async {
+        // Option A. local SQLite via GRDB or equivalent
+        // Option B. POST к remote analytics endpoint
+        // Option C. log only (для quick debugging)
+
+        // For kit-level testing simplicity. just append к local JSONL file
+        let file = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("proof-attempts.jsonl")
+
+        if let data = try? JSONEncoder().encode(event),
+           let line = String(data: data, encoding: .utf8) {
+            let entry = (line + "\n").data(using: .utf8)!
+            if let handle = try? FileHandle(forWritingTo: file) {
+                handle.seekToEndOfFile()
+                handle.write(entry)
+                handle.closeFile()
+            } else {
+                try? entry.write(to: file)
+            }
+        }
+    }
+}
+
+// MARK: - Context
+
+private struct AttemptContext {
+    let attemptId: String
+    let platform: String
+    let mode: String
+    let appState: String
+    let hackVariant: String
+    let startTimestamp: TimeInterval
+}
+
+// MARK: - AnyCodableValue (для payload flexibility)
+
+enum AnyCodableValue: Codable {
+    case string(String)
+    case int(Int)
+    case double(Double)
+    case bool(Bool)
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        switch self {
+        case .string(let v): try c.encode(v)
+        case .int(let v): try c.encode(v)
+        case .double(let v): try c.encode(v)
+        case .bool(let v): try c.encode(v)
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.singleValueContainer()
+        if let v = try? c.decode(String.self) { self = .string(v); return }
+        if let v = try? c.decode(Int.self) { self = .int(v); return }
+        if let v = try? c.decode(Double.self) { self = .double(v); return }
+        if let v = try? c.decode(Bool.self) { self = .bool(v); return }
+        throw DecodingError.typeMismatch(AnyCodableValue.self,
+            DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unknown type"))
+    }
+}
+
+// MARK: - Usage in your flow
+
+/*
+
+ // на entry в connect screen:
+ ProofAttemptCapture.shared.startAttempt(
+     platform: "github",
+     mode: "proxy",
+     appState: "warm-first",
+     hackVariant: "hack-1+6"  // or "stock" для baseline
+ )
+
+ // Hack 1. pre-warm WebSocket:
+ let t0 = CFAbsoluteTimeGetCurrent()
+ await prover.connect(...)
+ let durationMs = (CFAbsoluteTimeGetCurrent() - t0) * 1000
+ ProofAttemptCapture.shared.emit(type: "notarize.websocketConnected", payload: [
+     "stage": .string("prewarm"),
+     "durationMs": .double(durationMs),
+     "success": .bool(true)
+ ])
+
+ // CTA tap:
+ ProofAttemptCapture.shared.emit(type: "cta.tap", payload: [
+     "cta": .string("connect_github")
+ ])
+
+ // Hack 3 pre-sheet:
+ ProofAttemptCapture.shared.emit(type: "presheet.shown")
+ // after user continues:
+ ProofAttemptCapture.shared.emit(type: "presheet.continue")
+
+ // OAuth handoff:
+ ProofAttemptCapture.shared.emit(type: "webauth.opened")
+ ProofAttemptCapture.shared.emit(type: "webauth.systemSheetShown")
+ // на continue tap:
+ ProofAttemptCapture.shared.emit(type: "webauth.systemSheetContinue")
+ // на Universal Link return:
+ ProofAttemptCapture.shared.emit(type: "webauth.universalLinkReturn", payload: [
+     "returnMethod": .string("universal_link")
+ ])
+
+ // success:
+ ProofAttemptCapture.shared.emit(type: "success", payload: [
+     "totalDurationMs": .double(elapsedMs),
+     "notarizationsCount": .int(1)
+ ])
+ ProofAttemptCapture.shared.endAttempt()
+
+ // или abandon если юзер закрыл app:
+ ProofAttemptCapture.shared.emit(type: "abandon", payload: [
+     "lastStage": .string("systemSheet")
+ ])
+ ProofAttemptCapture.shared.endAttempt()
+
+ */
+
+// MARK: - Read events для analysis
+
+extension ProofAttemptCapture {
+    func readAll() -> [ProofAttemptEvent] {
+        let file = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("proof-attempts.jsonl")
+
+        guard let content = try? String(contentsOf: file, encoding: .utf8) else { return [] }
+
+        return content.split(separator: "\n").compactMap { line in
+            try? JSONDecoder().decode(ProofAttemptEvent.self, from: Data(line.utf8))
+        }
+    }
+
+    func clear() {
+        let file = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("proof-attempts.jsonl")
+        try? FileManager.default.removeItem(at: file)
+    }
+
+    func exportCSV() -> String {
+        let events = readAll()
+        let header = "type,timestamp,attemptId,platform,mode,appState,hackVariant\n"
+        let rows = events.map { e in
+            "\(e.type),\(e.timestamp),\(e.attemptId),\(e.platform),\(e.mode),\(e.appState),\(e.hackVariant)"
+        }.joined(separator: "\n")
+        return header + rows
+    }
+}
