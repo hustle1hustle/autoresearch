@@ -68,6 +68,10 @@ final class GitHubOAuth: NSObject, AuthProviding, ASWebAuthenticationPresentatio
     }
 
     private func exchangeCodeForTokens(code: String) async throws -> OAuthTokens {
+        #if DEBUG
+        // First real proof without a backend: exchange directly with GitHub.
+        if Config.githubClientSecret != nil { return try await GitHubDirect.exchange(code: code) }
+        #endif
         var req = URLRequest(url: URL(string: Config.githubExchangeURL)!)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

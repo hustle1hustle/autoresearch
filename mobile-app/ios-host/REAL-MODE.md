@@ -25,20 +25,27 @@ The public demo notary won't proxy GitHub (domain allow-list). Run your own.
 
 ## Ingredient 3 — real GitHub login  ⏱ ~20 min
 - **GitHub App** (NOT a classic OAuth App — refresh tokens need a GitHub App): **`../test-kit/setup/02-oauth-apps.md` §A**. You get a **Client ID** (`Iv1.…`) + **Secret**.
-- **Backend** that holds the secret (already written): **`../backend-stub/`** → put Client ID/Secret in `.env`, deploy (`fly deploy` per its README). You get a URL like `https://rep-oauth.fly.dev`.
+- **Backend** that holds the secret (already written): **`../backend-stub/`** → put Client ID/Secret in `.env`, deploy (`fly deploy` per its README). You get a URL like `https://rep-oauth.fly.dev`. **Optional for the first DEBUG proof** — the scheme `GITHUB_CLIENT_SECRET` shortcut skips it (see *Flip the switches*).
 
 ---
 
-## Flip the switches  ⏱ ~5 min
-Edit `Sources/App/Config.swift`:
-```swift
-static let useMockProver = false                 // ← was true
-static let useMockAuth   = false                 // ← was true
-static let githubClientID = "Iv1.your_client_id"
-static let verifierURL   = URL(string: "https://notary.yourdomain")!     // your notary
-static let githubExchangeURL = "https://rep-oauth.fly.dev/api/oauth/github/exchange"  // your backend
-static let githubRefreshURL  = "https://rep-oauth.fly.dev/api/oauth/github/refresh"
-```
+## Flip the switches  ⏱ ~5 min  (Xcode scheme env vars — no code edit)
+In Xcode: **Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸ Arguments ▸ Environment Variables**, add:
+
+| Name | Value |
+|---|---|
+| `USE_MOCK_PROVER` | `false` |
+| `USE_MOCK_AUTH` | `false` |
+| `GITHUB_CLIENT_ID` | `Iv1.your_id` |
+| `VERIFIER_URL` | your notary URL (e.g. the ngrok HTTPS URL) |
+| `GITHUB_CLIENT_SECRET` | your secret — **DEBUG-only shortcut, see below** |
+| `BACKEND_URL` | `https://rep-oauth.fly.dev` — *skip if using the DEBUG secret* |
+
+**No backend needed for the FIRST proof:** in a **DEBUG** build, if `GITHUB_CLIENT_SECRET`
+is set, the app exchanges the GitHub code **directly** — so you can skip Ingredient 3's
+backend deploy for the very first test. (Release builds ignore the secret and require the
+backend — secret never ships in a shipped app.)
+
 Then build to your iPhone (cable, free Apple ID):
 ```bash
 cd mobile-app/ios-host
