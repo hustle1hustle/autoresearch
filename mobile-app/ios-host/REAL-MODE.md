@@ -1,0 +1,65 @@
+# REAL MODE — prove your real GitHub on your iPhone
+
+The mock build is only for *feeling* the UX. A **real** proof needs three things
+that can't be faked, and a **one-time setup (~half a day the first time)**. After
+that, real proofs are instant. This is the plain checklist; each step links the
+detailed guide.
+
+> Who does what: **you** = GitHub App + (with your dev) deploy backend & notary;
+> **Mac/dev** = build the prover xcframework + build to the iPhone. The app code
+> is already written — going real is mostly setup + flipping 2 switches.
+
+---
+
+## Ingredient 1 — the prover engine (xcframework)  ⏱ ~1 h first time
+The zkTLS engine that actually makes the proof. Built on a Mac from Rust.
+- Follow **`../test-kit/setup/01-xcframework-build.md`** (run its `build-xcframework.sh`).
+- Output → drop `TlsnProver.xcframework` into `../test-kit/tlsn-build/ios/`.
+- In `project.yml`, **uncomment** the `dependencies: framework` block (bottom).
+- `Sources/TLSN/UniFFIProver.swift` is already written and activates automatically.
+
+## Ingredient 2 — a notary that allows `api.github.com`  ⏱ ~15 min
+The public demo notary won't proxy GitHub (domain allow-list). Run your own.
+- Follow **`../test-kit/setup/03-self-hosted-notary.md`** (Docker; allow-list incl. `api.github.com`).
+- Deploy it somewhere with HTTPS (Fly.io / a small VPS + Caddy). You get a URL like `https://notary.yourdomain`.
+
+## Ingredient 3 — real GitHub login  ⏱ ~20 min
+- **GitHub App** (NOT a classic OAuth App — refresh tokens need a GitHub App): **`../test-kit/setup/02-oauth-apps.md` §A**. You get a **Client ID** (`Iv1.…`) + **Secret**.
+- **Backend** that holds the secret (already written): **`../backend-stub/`** → put Client ID/Secret in `.env`, deploy (`fly deploy` per its README). You get a URL like `https://rep-oauth.fly.dev`.
+
+---
+
+## Flip the switches  ⏱ ~5 min
+Edit `Sources/App/Config.swift`:
+```swift
+static let useMockProver = false                 // ← was true
+static let useMockAuth   = false                 // ← was true
+static let githubClientID = "Iv1.your_client_id"
+static let verifierURL   = URL(string: "https://notary.yourdomain")!     // your notary
+static let githubExchangeURL = "https://rep-oauth.fly.dev/api/oauth/github/exchange"  // your backend
+static let githubRefreshURL  = "https://rep-oauth.fly.dev/api/oauth/github/refresh"
+```
+Then build to your iPhone (cable, free Apple ID):
+```bash
+cd mobile-app/ios-host
+xcodegen generate
+open REP.xcodeproj          # pick your iPhone at the top, press ▶︎
+```
+
+## Auto-return (optional for the first real test)
+The 1-tap auto-return back from GitHub (Hack 4) needs **AASA hosted on a domain you
+own** (`../test-kit/setup/04-universal-links.md`). For your very first real proof you
+can skip the polish — you'll just tap once to come back. Add AASA when you have `rep.xyz`.
+
+---
+
+## What "done" looks like
+Tap **Connect GitHub** → real Safari opens GitHub (your warm session) → authorize →
+back in REP → **real `octocat · N contributions` notarized by your notary**. Re-open →
+tap the card → **Face ID → real proof again in ~1 tap.**
+
+## Honest scope
+There's **no shortcut** around Ingredients 1–3 — any real on-device zkTLS proof needs a
+prover engine + a notary that allows the target + a real login. The heavy one is the
+xcframework build (Mac/Rust, scripted). Everything else is ~10–20 min each.
+If a step fights you → `../test-kit/troubleshooting.md`.
