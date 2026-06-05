@@ -10,7 +10,7 @@
 
 ### Step 1. Host AASA file
 
-Backend hosts `https://rep.xyz/.well-known/apple-app-site-association`:
+Backend hosts `https://r3p.xyz/.well-known/apple-app-site-association`:
 
 ```json
 {
@@ -42,7 +42,7 @@ Backend hosts `https://rep.xyz/.well-known/apple-app-site-association`:
 ```xml
 <key>com.apple.developer.associated-domains</key>
 <array>
-  <string>applinks:rep.xyz</string>
+  <string>applinks:r3p.xyz</string>
 </array>
 ```
 
@@ -68,7 +68,7 @@ struct RepApp: App {
     }
 
     func handleUniversalLink(_ url: URL) async {
-        guard url.host == "rep.xyz" else { return }
+        guard url.host == "r3p.xyz" else { return }
 
         switch url.path {
         case let p where p.hasPrefix("/oauth/github/callback"):
@@ -85,7 +85,7 @@ struct RepApp: App {
 ### Step 4. OAuth flow uses HTTPS redirect
 
 В OAuth setup (GitHub OAuth app etc):
-- **Redirect URI.** `https://rep.xyz/oauth/github/callback`
+- **Redirect URI.** `https://r3p.xyz/oauth/github/callback`
 - **NOT.** `rep://oauth/github/callback` ← это custom scheme, не используй
 
 ### Step 5. ASWebAuthenticationSession callback
@@ -106,7 +106,7 @@ session.start()
 ```swift
 let session = ASWebAuthenticationSession(
     url: githubAuthURL,
-    callback: .https(host: "rep.xyz", path: "/oauth/github/callback")
+    callback: .https(host: "r3p.xyz", path: "/oauth/github/callback")
 ) { ... }
 ```
 
@@ -114,7 +114,7 @@ let session = ASWebAuthenticationSession(
 
 ### Step 1. Host assetlinks.json
 
-Backend hosts `https://rep.xyz/.well-known/assetlinks.json`:
+Backend hosts `https://r3p.xyz/.well-known/assetlinks.json`:
 
 ```json
 [
@@ -139,7 +139,7 @@ Backend hosts `https://rep.xyz/.well-known/assetlinks.json`:
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="https" />
-        <data android:host="rep.xyz" />
+        <data android:host="r3p.xyz" />
         <data android:pathPrefix="/oauth/" />
     </intent-filter>
 </activity>
@@ -177,7 +177,7 @@ class OAuthCallbackActivity : AppCompatActivity() {
 После install:
 ```bash
 adb shell pm get-app-links com.rep.app
-# Должно показать: rep.xyz: verified
+# Должно показать: r3p.xyz: verified
 ```
 
 Если "rejected" — assetlinks.json broken (wrong fingerprint, wrong package, не доступен).
@@ -188,7 +188,7 @@ adb shell pm get-app-links com.rep.app
 
 iOS sometimes fetches AASA late после TestFlight install (до 15 минут). См. `../../open-questions.md` Q6. Workaround. fallback web-страница на callback URL:
 
-`https://rep.xyz/oauth/github/callback` если открывается в Safari (АА не fetched ещё), показывает:
+`https://r3p.xyz/oauth/github/callback` если открывается в Safari (АА не fetched ещё), показывает:
 
 ```html
 <!DOCTYPE html>
@@ -209,7 +209,7 @@ Custom URL scheme `rep://` это **TestFlight-only fallback**, не production 
 
 ### CDN cache на private servers
 
-iOS 14+ fetches AASA через Apple CDN. Если ваш сервер за VPN/firewall — CDN не доступится. Используйте `applinks:rep.xyz?mode=developer` в debug builds + Developer Mode → Associated Domain Development в Settings → Developer.
+iOS 14+ fetches AASA через Apple CDN. Если ваш сервер за VPN/firewall — CDN не доступится. Используйте `applinks:r3p.xyz?mode=developer` в debug builds + Developer Mode → Associated Domain Development в Settings → Developer.
 
 ## Что НЕ делать
 

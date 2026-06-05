@@ -9,7 +9,7 @@
 **Prerequisites.**
 - Docker Desktop / Docker Engine installed
 - Linux box или Mac для running (production. AWS / Fly.io / Hetzner)
-- Domain или IP для notary (dev. `notary.local`, prod. `verifier.rep.xyz`)
+- Domain или IP для notary (dev. `notary.local`, prod. `verifier.r3p.xyz`)
 
 ---
 
@@ -214,7 +214,7 @@ curl -k https://localhost:7047/health
 fly launch --name rep-notary
 # Edit fly.toml. expose port 7047, use Let's Encrypt cert
 fly deploy
-fly certs add verifier.rep.xyz
+fly certs add verifier.r3p.xyz
 ```
 
 ### Standard path. AWS / Hetzner / DigitalOcean
@@ -223,13 +223,13 @@ fly certs add verifier.rep.xyz
 2. Install Docker + docker-compose
 3. Setup Let's Encrypt cert через nginx-proxy или Caddy
 4. Run docker-compose
-5. DNS. `verifier.rep.xyz → <vps ip>`
+5. DNS. `verifier.r3p.xyz → <vps ip>`
 6. Firewall. allow 443 in, all out
 
 ### Caddy config (auto Let's Encrypt)
 
 ```
-verifier.rep.xyz {
+verifier.r3p.xyz {
     reverse_proxy localhost:7047
 }
 ```
@@ -243,7 +243,7 @@ Caddy handles HTTPS cert renewal automatically.
 В Swift кодом:
 
 ```swift
-let verifierURL = URL(string: "wss://verifier.rep.xyz/notary")!
+let verifierURL = URL(string: "wss://verifier.r3p.xyz/notary")!
 let prover = try await ProverSession.connect(
     verifier: verifierURL,
     roots: .mozillaWebPKI
@@ -259,7 +259,7 @@ let notaryPublicKey = "ed25519:<base64 of fixture/notary/notary.key.pub>"
 
 ## Verify полный flow работает
 
-1. Notary running на `wss://verifier.rep.xyz/notary` (или `wss://localhost:7047` для local dev)
+1. Notary running на `wss://verifier.r3p.xyz/notary` (или `wss://localhost:7047` для local dev)
 2. С тестового account достань GitHub access token через cURL OAuth flow
 3. В iOS app или через CLI utility сделай notarize request:
 

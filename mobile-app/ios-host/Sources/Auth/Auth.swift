@@ -36,7 +36,7 @@ extension Data {
     }
 }
 
-/// Simulated handoff for the mock-first opening UX (no Client ID / rep.xyz
+/// Simulated handoff for the mock-first opening UX (no Client ID / r3p.xyz
 /// needed). Mirrors the real stage timing closely enough to feel right.
 final class MockAuth: AuthProviding {
     func authenticate(anchor: ASPresentationAnchor,

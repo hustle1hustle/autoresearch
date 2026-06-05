@@ -35,7 +35,7 @@ docker run --env-file .env -p 8787:8787 rep-oauth-stub
 ## Fly.io (quick public HTTPS for device testing)
 ```bash
 fly launch --no-deploy        # generates fly.toml (set internal_port = 8787)
-fly secrets set GITHUB_CLIENT_ID=Iv1.xxx GITHUB_CLIENT_SECRET=xxx GITHUB_REDIRECT_URI=https://rep.xyz/oauth/github/callback
+fly secrets set GITHUB_CLIENT_ID=Iv1.xxx GITHUB_CLIENT_SECRET=xxx GITHUB_REDIRECT_URI=https://r3p.xyz/oauth/github/callback
 fly deploy
 ```
 Then point the app at it (below).

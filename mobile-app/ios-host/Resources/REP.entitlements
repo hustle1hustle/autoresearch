@@ -6,12 +6,12 @@
          for passkeys (Hack 5, item ⑦).
          DEV TIP: while testing via direct Xcode run (not TestFlight), append
          "?mode=developer" to skip Apple's CDN AASA fetch, e.g.
-           applinks:rep.xyz?mode=developer
+           applinks:r3p.xyz?mode=developer
          Switch back to the plain entries for TestFlight/App Store. -->
     <key>com.apple.developer.associated-domains</key>
     <array>
-        <string>applinks:rep.xyz</string>
-        <string>webcredentials:rep.xyz</string>
+        <string>applinks:r3p.xyz</string>
+        <string>webcredentials:r3p.xyz</string>
     </array>
 </dict>
 </plist>

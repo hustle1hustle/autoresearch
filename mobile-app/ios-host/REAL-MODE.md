@@ -56,7 +56,7 @@ open REP.xcodeproj          # pick your iPhone at the top, press ▶︎
 ## Auto-return (optional for the first real test)
 The 1-tap auto-return back from GitHub (Hack 4) needs **AASA hosted on a domain you
 own** (`../test-kit/setup/04-universal-links.md`). For your very first real proof you
-can skip the polish — you'll just tap once to come back. Add AASA when you have `rep.xyz`.
+can skip the polish — you'll just tap once to come back. Add AASA when you have `r3p.xyz`.
 
 ---
 

@@ -2,7 +2,7 @@
 
 Items **①–④ + ⑥** of `mobile-app/PLAN.md`: the opening/onboarding flow for the
 GitHub hero, including the **warm-returning 1-tap (Face ID) path**. **Runs on the
-simulator/iPhone right now with mocks** — no Rust prover, no OAuth app, no rep.xyz
+simulator/iPhone right now with mocks** — no Rust prover, no OAuth app, no r3p.xyz
 needed. That's the "does the open feel fast" gate.
 
 > **Simulator: enable Face ID** for the warm-returning path — **Features ▸ Face ID ▸ Enrolled**, then use **Features ▸ Face ID ▸ Matching/Non-matching Face** when the prompt appears. Without an enrolled biometric the Keychain item can't be created, so the app falls back to a fresh connect (by design).
@@ -38,6 +38,6 @@ Tap timings/events are written to `Documents/proof-attempts.jsonl` per
 | 5 — passkey probe (item ⑦) | not in this slice |
 
 ## Going real (later items)
-- **OAuth (OQ9):** create a **GitHub App** — *not* a classic OAuth App; refresh tokens (Hack 2) only work with GitHub Apps (`test-kit/setup/02-oauth-apps.md` §A). Callback `https://rep.xyz/oauth/github/callback`; put the `Iv1.…` Client ID in `Config.githubClientID`; set `Config.useMockAuth = false`. Code→token + refresh run on the **REP backend** (client secret off-device). Real `ASWebAuthenticationSession` https-callback needs **iOS 17.4+** (mocks cover older dev devices).
-- **AASA (Hack 4):** host `ServerTemplates/apple-app-site-association` at `https://rep.xyz/.well-known/` (replace `TEAMID`). For direct Xcode runs, use `applinks:rep.xyz?mode=developer` in the entitlement to skip Apple's CDN.
+- **OAuth (OQ9):** create a **GitHub App** — *not* a classic OAuth App; refresh tokens (Hack 2) only work with GitHub Apps (`test-kit/setup/02-oauth-apps.md` §A). Callback `https://r3p.xyz/oauth/github/callback`; put the `Iv1.…` Client ID in `Config.githubClientID`; set `Config.useMockAuth = false`. Code→token + refresh run on the **REP backend** (client secret off-device). Real `ASWebAuthenticationSession` https-callback needs **iOS 17.4+** (mocks cover older dev devices).
+- **AASA (Hack 4):** host `ServerTemplates/apple-app-site-association` at `https://r3p.xyz/.well-known/` (replace `TEAMID`). For direct Xcode runs, use `applinks:r3p.xyz?mode=developer` in the entitlement to skip Apple's CDN.
 - **Notary + prover (OQ8/OQ6, item ⑧):** run a notary that allow-lists `api.github.com` (`test-kit/setup/03-self-hosted-notary.md` — the PSE hosted notary won't), point `Config.verifierURL` at it; build the prover **xcframework** (`test-kit/setup/01-xcframework-build.md`), drop it in `test-kit/tlsn-build/ios/`, uncomment the framework in `project.yml`, set `Config.useMockProver = false`. **`Sources/TLSN/UniFFIProver.swift` is already written** (guarded by `#if canImport(TlsnProver)`) — it activates automatically once the framework is linked.

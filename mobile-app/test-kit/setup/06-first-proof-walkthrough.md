@@ -40,7 +40,7 @@ echo "GitHub OAuth Client ID: $(cat ~/secrets/github_oauth_client_id)"  # дол
 ### 1.3 Notary running
 
 ```bash
-curl -k https://verifier.rep.xyz/health
+curl -k https://verifier.r3p.xyz/health
 # Или для local dev:
 # curl -k https://localhost:7047/health
 ```
@@ -50,7 +50,7 @@ curl -k https://verifier.rep.xyz/health
 ### 1.4 AASA fetched
 
 ```bash
-curl -i https://rep.xyz/.well-known/apple-app-site-association
+curl -i https://r3p.xyz/.well-known/apple-app-site-association
 # Content-Type: application/json
 # 200 OK
 # Body: правильный JSON с твоим Bundle ID
@@ -63,7 +63,7 @@ curl -i https://rep.xyz/.well-known/apple-app-site-association
 Project should:
 - Минимум iOS 17.0 deployment target
 - Bundle ID matches AASA (`com.rep.app` или whatever ты задал)
-- Associated Domains capability enabled с `applinks:rep.xyz` и `webcredentials:rep.xyz`
+- Associated Domains capability enabled с `applinks:r3p.xyz` и `webcredentials:r3p.xyz`
 - `TlsnProver.xcframework` linked, "Embed & Sign"
 
 ---
@@ -130,7 +130,7 @@ import AuthenticationServices
 @MainActor
 class GitHubOAuth: NSObject {
     static let clientID = "Iv1.YOUR_CLIENT_ID"
-    static let redirectURI = "https://rep.xyz/oauth/github/callback"
+    static let redirectURI = "https://r3p.xyz/oauth/github/callback"
     static let scope = "read:user"
 
     static func authorizationURL(pkce: PKCE, state: String) -> URL {
@@ -151,7 +151,7 @@ class GitHubOAuth: NSObject {
     /// Для dev. возможно ходить напрямую (БУДЕТ leak client_secret через bundle).
     static func exchangeCode(_ code: String, pkce: PKCE) async throws -> (accessToken: String, refreshToken: String?) {
         // ВНИМАНИЕ. Для production используй свой server endpoint
-        // POST https://rep.xyz/api/oauth/github/exchange
+        // POST https://r3p.xyz/api/oauth/github/exchange
         // который owns client_secret и proxies request
 
         // Dev/test version (ходит напрямую к GitHub, использует client_secret):
@@ -225,7 +225,7 @@ class ProverSession {
 
         let options = TlsnProveOptions(
             mode: .Proxy,                                            // ← Hero proxy mode
-            verifierURL: "wss://verifier.rep.xyz/notary",
+            verifierURL: "wss://verifier.r3p.xyz/notary",
             redactHeaders: ["Authorization"],                        // hide bearer
             revealResponse: true,                                    // reveal whole body
         )
@@ -276,7 +276,7 @@ struct ConnectGitHubView: View {
         do {
             let callbackURL = try await ASWebAuthenticationSession.start(
                 url: authURL,
-                callback: .https(host: "rep.xyz", path: "/oauth/github/callback")
+                callback: .https(host: "r3p.xyz", path: "/oauth/github/callback")
             )
 
             guard let code = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?

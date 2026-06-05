@@ -7,7 +7,7 @@
 **Время.** ~30-60 минут first time (включая DNS / hosting setup), ~5 минут для config changes.
 
 **Prerequisites.**
-- Domain (e.g. `rep.xyz`) с control над `/.well-known/` path
+- Domain (e.g. `r3p.xyz`) с control над `/.well-known/` path
 - Apple Developer team (бесплатный Apple ID работает для simulator, paid нужен для prod entitlements)
 - Bundle ID для iOS app (e.g. `com.rep.app` или `xyz.rep.app`)
 
@@ -15,22 +15,22 @@
 
 ## Steps
 
-### 1. Setup hosting для `rep.xyz`
+### 1. Setup hosting для `r3p.xyz`
 
 Любой web host где ты можешь serve файлы под `/.well-known/`. Options:
 
 #### Option A. GitHub Pages (free, easy)
 
 ```bash
-# Create a repo "rep.xyz" с CNAME file
+# Create a repo "r3p.xyz" с CNAME file
 mkdir -p .well-known
-echo "rep.xyz" > CNAME
+echo "r3p.xyz" > CNAME
 git init && git add . && git commit -m "initial"
-# push to github.com/<user>/rep.xyz
-# Pages settings → enable, custom domain rep.xyz
+# push to github.com/<user>/r3p.xyz
+# Pages settings → enable, custom domain r3p.xyz
 ```
 
-DNS. CNAME `rep.xyz` → `<user>.github.io`.
+DNS. CNAME `r3p.xyz` → `<user>.github.io`.
 
 #### Option B. Cloudflare Pages / Vercel / Netlify
 
@@ -45,7 +45,7 @@ GET /.well-known/apple-app-site-association → static file
 
 ### 2. Создай AASA file
 
-**File path.** `https://rep.xyz/.well-known/apple-app-site-association`
+**File path.** `https://r3p.xyz/.well-known/apple-app-site-association`
 
 ⚠️ **No `.json` extension.** Just `apple-app-site-association`.
 
@@ -78,7 +78,7 @@ GET /.well-known/apple-app-site-association → static file
 
 ```bash
 # Должно return JSON
-curl -i https://rep.xyz/.well-known/apple-app-site-association
+curl -i https://r3p.xyz/.well-known/apple-app-site-association
 
 # Headers must include:
 # Content-Type: application/json
@@ -118,8 +118,8 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
 <dict>
     <key>com.apple.developer.associated-domains</key>
     <array>
-        <string>applinks:rep.xyz</string>
-        <string>webcredentials:rep.xyz</string>
+        <string>applinks:r3p.xyz</string>
+        <string>webcredentials:r3p.xyz</string>
     </array>
 </dict>
 </plist>
@@ -129,8 +129,8 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
 1. Project navigator → tap project → tap target → Signing & Capabilities tab
 2. Tap `+ Capability` → Associated Domains
 3. Tap `+` под Associated Domains
-4. Add `applinks:rep.xyz`
-5. Add `webcredentials:rep.xyz`
+4. Add `applinks:r3p.xyz`
+5. Add `webcredentials:r3p.xyz`
 
 ### 5. Dev mode для debugging
 
@@ -138,7 +138,7 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
 
 В entitlement file:
 ```xml
-<string>applinks:rep.xyz?mode=developer</string>
+<string>applinks:r3p.xyz?mode=developer</string>
 ```
 
 И на iOS device. **Settings → Developer → Associated Domain Development** enable.
@@ -170,7 +170,7 @@ struct RepApp: App {
     }
 
     func handleUniversalLink(_ url: URL) async {
-        guard url.host == "rep.xyz" else { return }
+        guard url.host == "r3p.xyz" else { return }
 
         switch url.path {
         case let path where path.hasPrefix("/oauth/github/callback"):
@@ -208,7 +208,7 @@ class GitHubOAuthCoordinator: NSObject, ASWebAuthenticationPresentationContextPr
             // iOS 17.4+ syntax. callback as Universal Link
             let session = ASWebAuthenticationSession(
                 url: authURL,
-                callback: .https(host: "rep.xyz", path: "/oauth/github/callback")
+                callback: .https(host: "r3p.xyz", path: "/oauth/github/callback")
             ) { callbackURL, error in
                 if let error = error {
                     continuation.resume(throwing: error)
@@ -240,7 +240,7 @@ let session = ASWebAuthenticationSession(
 
 1. Установи app на device (через Xcode или TestFlight)
 2. Wait 2 минуты для AASA fetch
-3. На device. open Safari, paste `https://rep.xyz/oauth/github/callback?test=1`
+3. На device. open Safari, paste `https://r3p.xyz/oauth/github/callback?test=1`
 4. Если правильно настроено → Safari banner "Open in REP" appears OR app opens automatically
 
 Если не работает:
@@ -254,13 +254,13 @@ let session = ASWebAuthenticationSession(
 swcutil show
 ```
 
-Должно показать. `applinks:rep.xyz` → `Validated`. Если `Failed` — see error message.
+Должно показать. `applinks:r3p.xyz` → `Validated`. Если `Failed` — see error message.
 
 #### Verify entitlement в release build
 
 ```bash
 codesign -d --entitlements - YourApp.app 2>&1 | grep applinks
-# Должно show. <string>applinks:rep.xyz</string>
+# Должно show. <string>applinks:r3p.xyz</string>
 ```
 
 Если empty в release но present в debug — `Entitlements-Release.plist` нужно update'нуть отдельно (classic bug).
@@ -270,14 +270,14 @@ codesign -d --entitlements - YourApp.app 2>&1 | grep applinks
 1. Trigger OAuth flow в app:
    ```swift
    let callbackURL = try await GitHubOAuthCoordinator().startGitHubOAuth(pkce: pkce)
-   print("Got callback. \(callbackURL)")  // https://rep.xyz/oauth/github/callback?code=xxx
+   print("Got callback. \(callbackURL)")  // https://r3p.xyz/oauth/github/callback?code=xxx
    ```
 
 2. ASWebAuthenticationSession opens Safari sheet
 3. User taps "Continue" в iOS consent sheet (Hack 3 pre-sheet covered separately)
 4. Safari shows GitHub OAuth page
 5. User taps "Authorize REP"
-6. Safari redirects to `https://rep.xyz/oauth/github/callback?code=xxx&state=xxx`
+6. Safari redirects to `https://r3p.xyz/oauth/github/callback?code=xxx&state=xxx`
 7. iOS intercepts via AASA → routes to app
 8. Sheet collapses, `onOpenURL` fires в host app
 
@@ -292,7 +292,7 @@ If step 7 fails. Universal Link не маршрутизирует. См. trouble
 Most common причина. AASA не fetched.
 
 Fixes:
-1. Verify file accessible. `curl -i https://rep.xyz/.well-known/apple-app-site-association`
+1. Verify file accessible. `curl -i https://r3p.xyz/.well-known/apple-app-site-association`
 2. Verify Content-Type правильный (application/json)
 3. No redirects (status must be 200)
 4. Enable Associated Domain Development на device
@@ -305,7 +305,7 @@ Fixes:
 
 **Workaround.** Add fallback web page at callback URL:
 
-`https://rep.xyz/oauth/github/callback`. сервер показывает:
+`https://r3p.xyz/oauth/github/callback`. сервер показывает:
 
 ```html
 <!DOCTYPE html>
@@ -329,7 +329,7 @@ Fixes:
 
 Xcode иногда updates only Debug entitlements when you add capability via UI.
 
-Fix. open both `Entitlements-Debug.plist` и `Entitlements-Release.plist`, ensure both have `com.apple.developer.associated-domains` with `applinks:rep.xyz`.
+Fix. open both `Entitlements-Debug.plist` и `Entitlements-Release.plist`, ensure both have `com.apple.developer.associated-domains` with `applinks:r3p.xyz`.
 
 ### "Code signing error: associated-domains entitlement is missing"
 
@@ -354,8 +354,8 @@ iOS 14+ fetches AASA через Apple CDN. Если ты update'нул AASA file
 
 ## Verify готов
 
-1. `curl -i https://rep.xyz/.well-known/apple-app-site-association` → 200 OK + JSON
-2. `swcutil show` на device → `applinks:rep.xyz` → Validated
+1. `curl -i https://r3p.xyz/.well-known/apple-app-site-association` → 200 OK + JSON
+2. `swcutil show` на device → `applinks:r3p.xyz` → Validated
 3. Manual OAuth test (см. "Full OAuth test" выше) → app opens automatically
 4. `onOpenURL` handler fires с правильным URL
 

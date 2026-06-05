@@ -43,7 +43,7 @@ Search by error message или symptom. Consolidated из всех hack/target/s
 **Fix.**
 1. Upgrade to paid Apple Developer account ($99/yr), OR
 2. Use direct Xcode install (not TestFlight) for personal device development
-3. Verify both `Entitlements-Debug.plist` AND `Entitlements-Release.plist` have `applinks:rep.xyz`
+3. Verify both `Entitlements-Debug.plist` AND `Entitlements-Release.plist` have `applinks:r3p.xyz`
 
 ### "Untrusted Developer" блокирует app на iPhone
 
@@ -179,9 +179,9 @@ if UIApplication.shared.canOpenURL(URL(string: "strava://")!) {
 **Cause.** AASA не fetched or invalid.
 
 **Diagnostic.**
-1. `curl -i https://rep.xyz/.well-known/apple-app-site-association` → 200 OK, Content-Type: application/json, no redirects
+1. `curl -i https://r3p.xyz/.well-known/apple-app-site-association` → 200 OK, Content-Type: application/json, no redirects
 2. On device. Settings → Developer → Associated Domain Development → enable
-3. `swcutil show` в Mac Terminal → look for `applinks:rep.xyz` status (`Validated` or `Failed`)
+3. `swcutil show` в Mac Terminal → look for `applinks:r3p.xyz` status (`Validated` or `Failed`)
 
 **Fix.**
 - Если file 404 → re-host
@@ -199,7 +199,7 @@ if UIApplication.shared.canOpenURL(URL(string: "strava://")!) {
 
 **Cause.** Xcode capability UI updates только Debug entitlements file.
 
-**Fix.** Open both files, ensure both have `com.apple.developer.associated-domains` array containing `applinks:rep.xyz`.
+**Fix.** Open both files, ensure both have `com.apple.developer.associated-domains` array containing `applinks:r3p.xyz`.
 
 ### CDN cache stale (production AASA updated но iOS sees old version)
 

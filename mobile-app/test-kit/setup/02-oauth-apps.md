@@ -10,7 +10,7 @@
 - GitHub account
 - Strava account
 - StackOverflow account
-- Уже задеплоен `rep.xyz` (или решено что callback host — пока какой)
+- Уже задеплоен `r3p.xyz` (или решено что callback host — пока какой)
 
 ---
 
@@ -20,11 +20,11 @@
 
 | Option | Pros | Cons | Когда выбирать |
 |---|---|---|---|
-| `https://rep.xyz/oauth/<target>/callback` | Production-ready, готов под AASA | Требует deployed domain | **Recommended.** Если rep.xyz уже live |
+| `https://r3p.xyz/oauth/<target>/callback` | Production-ready, готов под AASA | Требует deployed domain | **Recommended.** Если r3p.xyz уже live |
 | `https://rep-dev.<your-dev-domain>/oauth/<target>/callback` | Dev separation от prod | Doubles AASA work | Если хочешь чёткий dev/prod split |
 | Temporary `https://oauth.ngrok.io` | Quick start без своего хоста | Меняется при restart ngrok | Только для самого первого "does it work" теста |
 
-**Рекомендация для kit.** Используй `https://rep.xyz/oauth/<target>/callback`. Hosting AASA — отдельная задача в [04-universal-links.md](04-universal-links.md), но нечего откладывать.
+**Рекомендация для kit.** Используй `https://r3p.xyz/oauth/<target>/callback`. Hosting AASA — отдельная задача в [04-universal-links.md](04-universal-links.md), но нечего откладывать.
 
 ---
 
@@ -36,9 +36,9 @@
 2. **New OAuth App**
 3. Заполни:
    - **Application name.** `REP (dev)` или `REP iOS`
-   - **Homepage URL.** `https://rep.xyz`
+   - **Homepage URL.** `https://r3p.xyz`
    - **Application description.** `Mint verifiable proofs of your GitHub data via zkTLS. Mobile.`
-   - **Authorization callback URL.** `https://rep.xyz/oauth/github/callback`
+   - **Authorization callback URL.** `https://r3p.xyz/oauth/github/callback`
 4. Tap **Register application**
 
 ### Получи credentials
@@ -75,8 +75,8 @@
 3. Заполни:
    - **GitHub App name.** `REP (dev)` или `REP iOS Dev`
    - **Description.** Same as before
-   - **Homepage URL.** `https://rep.xyz`
-   - **Callback URL.** `https://rep.xyz/oauth/github/callback`
+   - **Homepage URL.** `https://r3p.xyz`
+   - **Callback URL.** `https://r3p.xyz/oauth/github/callback`
    - ✅ **Expire user authorization tokens** — checked
    - ✅ **Request user authorization (OAuth) during installation** — checked
    - **Webhook.** Active → uncheck (не нужно для proof flow)
@@ -140,9 +140,9 @@ Response должна содержать:
    - **Application Name.** `REP`
    - **Category.** Other
    - **Club.** оставь пустым
-   - **Website.** `https://rep.xyz`
+   - **Website.** `https://r3p.xyz`
    - **Application Description.** `Mint verifiable proofs of your Strava activities via zkTLS.`
-   - **Authorization Callback Domain.** `rep.xyz` (⚠️ ТОЛЬКО domain, не full path)
+   - **Authorization Callback Domain.** `r3p.xyz` (⚠️ ТОЛЬКО domain, не full path)
 4. Upload icon (опционально, но recommended для production-feel)
 5. Tap **Create**
 
@@ -160,7 +160,7 @@ Response должна содержать:
 ```swift
 let authURL = "strava://oauth/mobile/authorize" +
     "?client_id=\(clientID)" +
-    "&redirect_uri=https://rep.xyz/oauth/strava/callback" +
+    "&redirect_uri=https://r3p.xyz/oauth/strava/callback" +
     "&response_type=code" +
     "&approval_prompt=auto" +
     "&scope=activity:read" +
@@ -190,8 +190,8 @@ https://www.strava.com/oauth/mobile/authorize?...
 2. Заполни:
    - **Application Name.** `REP`
    - **Description.** `Mint verifiable proofs of your StackOverflow reputation via zkTLS.`
-   - **OAuth Domain.** `rep.xyz`
-   - **Application Website.** `https://rep.xyz`
+   - **OAuth Domain.** `r3p.xyz`
+   - **Application Website.** `https://r3p.xyz`
    - **Use Stack Exchange API access tokens.** check (опционально для read-only)
    - **Enable Client Side OAuth Flow.** ✅ check (для PKCE)
 3. Tap **Register Your Application**
@@ -208,7 +208,7 @@ https://www.strava.com/oauth/mobile/authorize?...
 let authURL = "https://stackoverflow.com/oauth" +
     "?client_id=\(clientID)" +
     "&scope=read_inbox" +
-    "&redirect_uri=https://rep.xyz/oauth/stackoverflow/callback" +
+    "&redirect_uri=https://r3p.xyz/oauth/stackoverflow/callback" +
     "&state=\(state)" +
     "&code_challenge=\(pkce.challenge)" +
     "&code_challenge_method=S256"
@@ -237,9 +237,9 @@ Pre-condition. user должен быть org admin в Anthropic Console и со
 
 | Target | Client ID | Client Secret | Callback URL | Scope |
 |---|---|---|---|---|
-| GitHub | `Iv1.xxx` | `ghp_xxx` | `https://rep.xyz/oauth/github/callback` | (via app permissions) |
-| Strava | `<integer>` | `<hex string>` | `https://rep.xyz/oauth/strava/callback` (domain `rep.xyz`) | `activity:read` |
-| StackOverflow | `<integer>` | `<hex string>` + Key | `https://rep.xyz/oauth/stackoverflow/callback` | `read_inbox` |
+| GitHub | `Iv1.xxx` | `ghp_xxx` | `https://r3p.xyz/oauth/github/callback` | (via app permissions) |
+| Strava | `<integer>` | `<hex string>` | `https://r3p.xyz/oauth/strava/callback` (domain `r3p.xyz`) | `activity:read` |
+| StackOverflow | `<integer>` | `<hex string>` + Key | `https://r3p.xyz/oauth/stackoverflow/callback` | `read_inbox` |
 
 **Где хранить.**
 - Client IDs → в iOS app bundle (public, OK)
@@ -262,7 +262,7 @@ STACKOVERFLOW_KEY=replace_me
 
 ### "redirect_uri_mismatch"
 
-Точное совпадение требуется. `https://rep.xyz/oauth/github/callback` ≠ `https://rep.xyz/oauth/github/callback/` (trailing slash). Verify exact match в OAuth app settings.
+Точное совпадение требуется. `https://r3p.xyz/oauth/github/callback` ≠ `https://r3p.xyz/oauth/github/callback/` (trailing slash). Verify exact match в OAuth app settings.
 
 ### GitHub. `incorrect_client_credentials`
 

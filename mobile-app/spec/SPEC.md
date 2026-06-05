@@ -236,8 +236,8 @@ Same as warm-first, плюс GitHub login form (email + password, ~10-20 с) + �
 **Что.** OAuth callback URL = Universal Link с AASA. iOS автоматически маршрутизирует back в host-shell.
 
 **Как.**
-- AASA в `https://rep.xyz/.well-known/apple-app-site-association`
-- Entitlement `applinks:rep.xyz` в `Entitlements-Release.plist`
+- AASA в `https://r3p.xyz/.well-known/apple-app-site-association`
+- Entitlement `applinks:r3p.xyz` в `Entitlements-Release.plist`
 - `.onOpenURL { url in ... }` или `.onContinueUserActivity(NSUserActivityTypeBrowsingWeb)`
 - ASWebAuthSession `callback: .https(host:path:)` (iOS 17.4+) ИЛИ `callbackURLScheme: nil`
 
@@ -255,7 +255,7 @@ Same as warm-first, плюс GitHub login form (email + password, ~10-20 с) + �
 
 **Не применимо.** GitHub OAuth direct flow (GitHub не accepts WebAuthn для OAuth token issuance).
 
-**Как.** iOS. `ASAuthorizationPlatformPublicKeyCredentialProvider` + `performAutoFillAssistedRequests`. AASA включает `webcredentials:rep.xyz`.
+**Как.** iOS. `ASAuthorizationPlatformPublicKeyCredentialProvider` + `performAutoFillAssistedRequests`. AASA включает `webcredentials:r3p.xyz`.
 
 **Экономия.** 3-5 с вход когда применимо. **Privacy-preserving.** RP не learn'ит availability.
 
@@ -301,7 +301,7 @@ Same as warm-first, плюс GitHub login form (email + password, ~10-20 с) + �
 **Неделя 2.**
 - Hack 2 (refresh token + Face ID). Warm returning путь.
 - "What was proved" expandable card в success state
-- Share artifact v1 — hosted verifier page `https://rep.xyz/p/<id>`
+- Share artifact v1 — hosted verifier page `https://r3p.xyz/p/<id>`
 - Cold путь с error/fallback handling
 
 **Неделя 3.**
@@ -335,7 +335,7 @@ Same as warm-first, плюс GitHub login form (email + password, ~10-20 с) + �
 
 ## Share artifact (v1)
 
-**Hosted deep link** `https://rep.xyz/p/<id>`. Recipient видит claim summary, нотариев public key, "Verify cryptographically" button что делает signature check в browser. **Cost.** REP хостит page (cheap. static + minimal API). v2 = portable `.rep` файл, v3 = iOS Wallet pass.
+**Hosted deep link** `https://r3p.xyz/p/<id>`. Recipient видит claim summary, нотариев public key, "Verify cryptographically" button что делает signature check в browser. **Cost.** REP хостит page (cheap. static + minimal API). v2 = portable `.rep` файл, v3 = iOS Wallet pass.
 
 ---
 

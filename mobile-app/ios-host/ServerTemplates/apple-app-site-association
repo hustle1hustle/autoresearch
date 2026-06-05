@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["TEAMID.xyz.rep.host"],
+        "appIDs": ["TEAMID.xyz.r3p.host"],
         "components": [
           { "/": "/oauth/github/callback", "comment": "GitHub OAuth callback (Hack 4 auto-return)" }
         ]
@@ -10,6 +10,6 @@
     ]
   },
   "webcredentials": {
-    "apps": ["TEAMID.xyz.rep.host"]
+    "apps": ["TEAMID.xyz.r3p.host"]
   }
 }

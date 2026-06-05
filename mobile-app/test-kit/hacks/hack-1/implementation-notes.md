@@ -32,7 +32,7 @@ struct ConnectGitHubView: View {
         .task {
             // Запускается при появлении view, до любого таптания
             await prover.connect(
-                verifier: URL(string: "wss://verifier.rep.xyz/notary")!,
+                verifier: URL(string: "wss://verifier.r3p.xyz/notary")!,
                 roots: .mozillaWebPKI
             )
             proverReady = true
@@ -113,7 +113,7 @@ class ConnectGitHubViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 session = TLSNProverSession.open(
-                    verifier = "wss://verifier.rep.xyz/notary",
+                    verifier = "wss://verifier.r3p.xyz/notary",
                     roots = WebPKIRoots.mozilla()
                 )
                 _proverReady.value = true

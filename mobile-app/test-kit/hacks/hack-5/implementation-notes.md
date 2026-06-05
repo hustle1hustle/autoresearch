@@ -13,7 +13,7 @@
 
 - iOS 17.5+ для `ASAuthorizationPlatformPublicKeyCredentialProvider` + `requestStyle: .conditional`
 - Android 14+ для `CredentialManager.getCredential` с `isConditional=true`
-- AASA включает `webcredentials:rep.xyz` (отдельно от `applinks:` для passkey scope)
+- AASA включает `webcredentials:r3p.xyz` (отдельно от `applinks:` для passkey scope)
 
 ## iOS implementation
 
@@ -28,7 +28,7 @@
 }
 ```
 
-И entitlement `com.apple.developer.associated-domains` уже включает `applinks:rep.xyz` — для webcredentials ничего отдельно не нужно, тот же entitlement покрывает.
+И entitlement `com.apple.developer.associated-domains` уже включает `applinks:r3p.xyz` — для webcredentials ничего отдельно не нужно, тот же entitlement покрывает.
 
 ### Step 2. Fire conditional probe
 
@@ -40,7 +40,7 @@ class PasskeyProbe: NSObject, ObservableObject, ASAuthorizationControllerDelegat
 
     func startConditionalProbe(challenge: Data) {
         let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
-            relyingPartyIdentifier: "rep.xyz"
+            relyingPartyIdentifier: "r3p.xyz"
         )
         let request = provider.createCredentialAssertionRequest(challenge: challenge)
 

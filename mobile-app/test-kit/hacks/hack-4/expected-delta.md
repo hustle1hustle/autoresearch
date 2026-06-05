@@ -4,7 +4,7 @@
 
 `../../mobile-ux-deep-research.md` §1 Hack 4:
 
-> **Trick:** Configure REP's OAuth redirect URI as a Universal Link backed by Apple's `apple-app-site-association` (AASA) file at `https://rep.xyz/.well-known/apple-app-site-association`. After GitHub finishes OAuth, iOS routes the redirect into our app *automatically*, with the system-managed `ASWebAuthenticationSession` collapsing cleanly.
+> **Trick:** Configure REP's OAuth redirect URI as a Universal Link backed by Apple's `apple-app-site-association` (AASA) file at `https://r3p.xyz/.well-known/apple-app-site-association`. After GitHub finishes OAuth, iOS routes the redirect into our app *automatically*, with the system-managed `ASWebAuthenticationSession` collapsing cleanly.
 >
 > **Savings:** prevents the "manual swipe-back" anti-pattern that costs ~3–8 s and ~30% drop-off when a user lands on a callback page they don't know how to leave.
 

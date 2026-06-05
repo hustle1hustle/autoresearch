@@ -8,7 +8,7 @@ struct ProofSuccessView: View {
     @EnvironmentObject var router: AppRouter
     @State private var showDetail = false
 
-    private var shareURL: URL { URL(string: "https://rep.xyz/p/\(claim.id.uuidString)")! }
+    private var shareURL: URL { URL(string: "https://r3p.xyz/p/\(claim.id.uuidString)")! }
 
     var body: some View {
         VStack(spacing: 18) {

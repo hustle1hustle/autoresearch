@@ -3,14 +3,14 @@
 ## Setup
 
 1. Имплементируй AASA + entitlement (iOS) и assetlinks.json + autoVerify (Android) per `implementation-notes.md`
-2. Verify AASA fetched. iOS Settings → Developer → enable Associated Domain Development → "applinks:rep.xyz?mode=developer"
+2. Verify AASA fetched. iOS Settings → Developer → enable Associated Domain Development → "applinks:r3p.xyz?mode=developer"
 3. Verify App Links. `adb shell pm get-app-links com.rep.app` → должно показать "verified"
 4. Test host-shell установлен через TestFlight (не Xcode direct) для production-like behavior
 
 ## Measurement points
 
 - **T_oauth_complete.** GitHub OAuth flow finished (user tapped Authorize)
-- **T_redirect_to_https.** Browser navigated к `https://rep.xyz/oauth/github/callback`
+- **T_redirect_to_https.** Browser navigated к `https://r3p.xyz/oauth/github/callback`
 - **T_host_shell_open.** Host-shell came to foreground via Universal Link
 - **T_handler_called.** Host-shell `.onOpenURL` / `OAuthCallbackActivity` triggered
 - **T_resume_state.** Host-shell resumed proof-in-flight state
@@ -94,8 +94,8 @@ Intentionally break AASA file (typo в bundle ID или missing component):
 1. **AASA actually fetched.** iOS. `swcutil show` в Terminal (требует macOS). Покажет registered associated domains and their fetch status.
 2. **App Links verified.** Android. `adb shell pm get-app-links` output должно содержать `verified`.
 3. **HTTPS-only callback.** Если в OAuth setup ты указал `http://` без s — AASA не работает.
-4. **Path prefix matches.** Если AASA содержит `/oauth/github/callback*` но OAuth registered callback `https://rep.xyz/auth/github` — не маршрутизирует. Match paths exactly.
-5. **Universal Link не работает если open from same domain.** Если юзер на rep.xyz tap'ает ссылку которая идёт на rep.xyz — iOS оставит в Safari (это known iOS behavior). Не баг.
+4. **Path prefix matches.** Если AASA содержит `/oauth/github/callback*` но OAuth registered callback `https://r3p.xyz/auth/github` — не маршрутизирует. Match paths exactly.
+5. **Universal Link не работает если open from same domain.** Если юзер на r3p.xyz tap'ает ссылку которая идёт на r3p.xyz — iOS оставит в Safari (это known iOS behavior). Не баг.
 
 ## Pass/fail criteria
 

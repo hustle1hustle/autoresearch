@@ -31,24 +31,24 @@ enum Config {
     /// (the secret must never ship in a release build).
     static let githubClientSecret = env("GITHUB_CLIENT_SECRET")
     /// HTTPS callback (Universal Link, Hack 4) — never a custom scheme.
-    static let githubRedirectURI = "https://rep.xyz/oauth/github/callback"
+    static let githubRedirectURI = "https://r3p.xyz/oauth/github/callback"
     static let githubAuthorizeURL = "https://github.com/login/oauth/authorize"
     /// REP backend (mobile-app/backend-stub) — holds the client secret. Set
     /// BACKEND_URL in the scheme (e.g. https://rep-oauth.fly.dev or http://<mac-ip>:8787).
-    private static let backendBase = env("BACKEND_URL") ?? "https://rep.xyz"
+    private static let backendBase = env("BACKEND_URL") ?? "https://r3p.xyz"
     static let githubExchangeURL = backendBase + "/api/oauth/github/exchange"
     static let githubRefreshURL  = backendBase + "/api/oauth/github/refresh"
 
     // MARK: TLSN / verifier
     /// Matches the app's Settings "Verifier URL". demo.tlsnotary.org to start;
     /// for a real-device GitHub proof you need a notary that allow-lists
-    /// api.github.com (OQ8 — self-host tlsnotary/notary-server, or rep.xyz).
+    /// api.github.com (OQ8 — self-host tlsnotary/notary-server, or r3p.xyz).
     static let verifierURL = URL(string: env("VERIFIER_URL") ?? "https://demo.tlsnotary.org")!
     /// Default proving mode. Proxy ~1–2s; flip to .mpc on 403/WAF (ModeRouter).
     static let defaultMode: ProverMode = .proxy
 
     // MARK: Universal Links (Hack 4)
-    static let appLinkHost = "rep.xyz"
+    static let appLinkHost = "r3p.xyz"
     static let oauthCallbackPath = "/oauth/github/callback"
 
     // MARK: UX timing

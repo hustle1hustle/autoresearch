@@ -14,8 +14,8 @@
 
 1. https://github.com/settings/developers → New OAuth App
 2. **Name.** REP (test)
-3. **Homepage URL.** https://rep.xyz
-4. **Authorization callback URL.** `https://rep.xyz/oauth/github/callback`  
+3. **Homepage URL.** https://r3p.xyz
+4. **Authorization callback URL.** `https://r3p.xyz/oauth/github/callback`  
    ⚠️ HTTPS, не custom scheme. Required for Universal Link auto-return (Hack 4).
 5. **Enable refresh tokens.** В OAuth App settings включи "Issue refresh tokens" чтобы получить refresh_token в response. ([GitHub docs](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/refreshing-user-access-tokens))
 
@@ -33,7 +33,7 @@ let pkce = PKCE.generate()
 // codeChallenge — SHA256(codeVerifier), base64url encoded
 let authURL = "https://github.com/login/oauth/authorize" +
     "?client_id=\(clientID)" +
-    "&redirect_uri=https://rep.xyz/oauth/github/callback" +
+    "&redirect_uri=https://r3p.xyz/oauth/github/callback" +
     "&scope=read:user" +
     "&code_challenge=\(pkce.challenge)" +
     "&code_challenge_method=S256" +

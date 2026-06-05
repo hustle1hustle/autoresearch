@@ -22,7 +22,7 @@ struct ProofAttemptEvent: Codable {
 final class ProofAttemptCapture {
     static let shared = ProofAttemptCapture()
     private var current: AttemptContext?
-    private let log = Logger(subsystem: "xyz.rep.host", category: "proof-attempt")
+    private let log = Logger(subsystem: "xyz.r3p.host", category: "proof-attempt")
 
     private lazy var anonId: String = {
         if let id = UserDefaults.standard.string(forKey: "rep.anonId") { return id }

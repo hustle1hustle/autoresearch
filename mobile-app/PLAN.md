@@ -42,9 +42,9 @@ mobile-app/ios-host/
    Instrumentation/Analytics.swift   # event-spec wiring (from measurement/capture-ios.swift.snippet)
   Resources/
    Info.plist                        # LSApplicationQueriesSchemes (canOpenURL probes), ATS
-   REP.entitlements                  # applinks:rep.xyz, webcredentials:rep.xyz
+   REP.entitlements                  # applinks:r3p.xyz, webcredentials:r3p.xyz
   ServerTemplates/
-   apple-app-site-association        # AASA template (Hack 4) to host at rep.xyz/.well-known/
+   apple-app-site-association        # AASA template (Hack 4) to host at r3p.xyz/.well-known/
 ```
 **Order:** ① scaffold (project.yml, REPApp, Theme, `TLSNProving`+`MockProver`, Models) → ② ConnectGitHubView + PreSheetView(H3) + StageProgressView → ③ OAuthService+PKCE + UniversalLinkRouter(H4) + AASA/entitlements → ④ Notarize-in-animation(H6) wiring + ProofSuccessView/“what was proved” → ⑤ Prewarm(H1 micro) → ⑥ TokenStore biometry(H2) + ContextView warm-returning → ⑦ PasskeyProbe(H5) → ⑧ UniFFIProver swap + Analytics throughout. ①–④ = your first on-device build (mock prover) to test the opening UX.
 
@@ -52,7 +52,7 @@ mobile-app/ios-host/
 1. Build the prover **`.xcframework`** from `tlsn-mobile` (reuse `app/mobile/build.sh` Rust output + uniffi-bindgen; package standalone) → drop in `test-kit/tlsn-build/ios/`. *(If you'd rather, the dev who offered help can produce this once.)*
 2. `brew install xcodegen` → `xcodegen generate` → open in Xcode; sign with your **free Apple ID**.
 3. Fill real config: GitHub OAuth **Client ID**, verifier URL (`https://demo.tlsnotary.org` to start), bundle id, `applinks:` domain.
-4. Host **AASA** at `https://rep.xyz/.well-known/apple-app-site-association` + the GitHub OAuth callback page (`/oauth/github/callback`). (Verifier service is a separate deliverable.)
+4. Host **AASA** at `https://r3p.xyz/.well-known/apple-app-site-association` + the GitHub OAuth callback page (`/oauth/github/callback`). (Verifier service is a separate deliverable.)
 5. `xcodebuild`/run on **Simulator** (0-account) and your **iPhone** (USB, free signing); confirm Q1 on device (mode:'Proxy' notarize), then fill `test-kit/comparison/template.csv` + Q4 wall-clock table.
 
 ## (c) Open questions beyond the 5

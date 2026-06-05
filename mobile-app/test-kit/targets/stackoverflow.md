@@ -14,8 +14,8 @@
 
 1. https://stackapps.com/apps/oauth/register
 2. **Application Name.** REP
-3. **Application Website.** https://rep.xyz
-4. **OAuth Domain.** rep.xyz
+3. **Application Website.** https://r3p.xyz
+4. **OAuth Domain.** r3p.xyz
 5. **Application Use.** End-user — Consumer application
 6. **Enable Client Side OAuth Flow** для PKCE
 7. Note Client ID, Client Secret, Application Key
@@ -26,7 +26,7 @@
 let authURL = "https://stackoverflow.com/oauth" +
     "?client_id=\(clientID)" +
     "&scope=read_inbox" +    // request only read scope
-    "&redirect_uri=https://rep.xyz/oauth/stackoverflow/callback" +
+    "&redirect_uri=https://r3p.xyz/oauth/stackoverflow/callback" +
     "&state=\(state)" +
     "&code_challenge=\(pkce.challenge)" +
     "&code_challenge_method=S256"

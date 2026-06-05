@@ -15,8 +15,8 @@
 1. https://www.strava.com/settings/api → Create App
 2. **Application Name.** REP (test)
 3. **Category.** "Other"
-4. **Website.** https://rep.xyz
-5. **Authorization Callback Domain.** `rep.xyz`  
+4. **Website.** https://r3p.xyz
+5. **Authorization Callback Domain.** `r3p.xyz`  
    ⚠️ Strava accepts only domain, не full path
 6. **Allowed scopes.** `activity:read` (или `activity:read_all` для richer data)
 
@@ -30,7 +30,7 @@
 ```swift
 let authURL = "strava://oauth/mobile/authorize" +
     "?client_id=\(clientID)" +
-    "&redirect_uri=https://rep.xyz/oauth/strava/callback" +
+    "&redirect_uri=https://r3p.xyz/oauth/strava/callback" +
     "&response_type=code" +
     "&approval_prompt=auto" +
     "&scope=activity:read" +

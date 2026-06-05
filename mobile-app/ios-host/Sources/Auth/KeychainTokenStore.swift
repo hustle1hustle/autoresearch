@@ -26,7 +26,7 @@ enum TokenLoadResult: Equatable {
 
 final class KeychainTokenStore: TokenStore {
     static let shared = KeychainTokenStore()
-    private let service = "xyz.rep.host.tokens"
+    private let service = "xyz.r3p.host.tokens"
 
     private struct Stored: Codable {
         let accessToken: String; let refreshToken: String?; let expiresIn: Int
